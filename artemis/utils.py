@@ -1,8 +1,7 @@
 """
 Lots of helper functions to ease tests
 """
-import collections
-from collections import deque
+from collections import deque, Iterable, OrderedDict
 import os
 import itertools
 import requests
@@ -177,6 +176,28 @@ def filter_dict(response, mask):
     return flask_restful.marshal(response, mask)
 
 
+def order_response(response):
+    def sort_response(dictionary):
+        res = OrderedDict()
+        for k, v in sorted(dictionary.items()):
+            if isinstance(v, dict):
+                res[k] = sort_response(v)
+            elif isinstance(v, list):
+                res[k] = []
+                for item in v:
+                    if hasattr(item, "items"):
+                        res[k].append(sort_response(item))
+                    else:
+                        res[k] = v
+            else:
+                res[k] = v
+        return res
+
+    if isinstance(response, OrderedDict):
+        response = json.loads(json.dumps(response))
+    return sort_response(response)
+
+
 def get_calling_test_function():
     """
     return the calling test method.
@@ -285,7 +306,7 @@ def sort_all_list_dict(response):
     queue = deque()
 
     def magic_sort(elt):
-        if not isinstance(elt, collections.Iterable):
+        if not isinstance(elt, Iterable):
             yield elt
         else:
             to_check = [ARTEMIS_CUSTOM_ID, "uri", "id", "label", "name", "href"]
