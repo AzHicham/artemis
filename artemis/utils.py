@@ -177,6 +177,38 @@ def filter_dict(response, mask):
 
 
 def order_response(response):
+    """
+    Sort dictionaries recursively in the json response to guarantee a similar response independently of the run
+    List aren't sorted to maintain significant items order
+
+     Ex: resp = {
+            "dict": {
+                "sub-dict":{
+                    "c": "c",
+                    "a": "a",
+                },
+                "list": ["b", "i", "g", "M"],
+                "dict_list": [
+                    {"2nd_dict": "test2", "param": "p"},
+                    {"param": "p", "1st_dict": "test1"},
+                ]
+            }
+        }
+
+    sort_response(resp)
+    "dict": {
+        "dict_list": [
+            { "2nd_dict": "test2", "param": "p" },
+            { "1st_dict": "test1", "param": "p" }
+        ],
+        "list":  ["b", "i", "g", "M"],
+        "sub-dict": {
+            "a": "a",
+            "c": "c",
+        }
+    }
+    """
+
     def sort_response(dictionary):
         res = OrderedDict()
         for k, v in sorted(dictionary.items()):
@@ -185,14 +217,17 @@ def order_response(response):
             elif isinstance(v, list):
                 res[k] = []
                 for item in v:
-                    if hasattr(item, "items"):
-                        res[k].append(sort_response(item))
-                    else:
-                        res[k] = v
+                    # Navitia response may contain 2 types of list: [dict] and [str]
+                    # If the item in the list is iterable (dict), recursively sort it
+                    # If the item isn't iterable (str), copy the item as is
+                    res[k].append(sort_response(item)) if hasattr(
+                        item, "items"
+                    ) else res[k].append(item)
             else:
                 res[k] = v
         return res
 
+    # If the response is an OrderedDict, convert it in dict for sorting iteration
     if isinstance(response, OrderedDict):
         response = json.loads(json.dumps(response))
     return sort_response(response)
