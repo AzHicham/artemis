@@ -573,6 +573,10 @@ class ArtemisTestFixture(CommonTestFixture):
                 pytest_report_makers.add_to_report(
                     self.get_test_name(), http_query, report_message
                 )
+                pytest_report_makers.add_to_csv_report(
+                    reference_full_response, resp_dict, self.get_test_name()
+                )
+
 
             # Print difference in console
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
