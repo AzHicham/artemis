@@ -577,7 +577,6 @@ class ArtemisTestFixture(CommonTestFixture):
                     reference_full_response, resp_dict, self.get_test_name()
                 )
 
-
             # Print difference in console
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
 

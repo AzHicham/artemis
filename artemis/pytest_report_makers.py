@@ -6,13 +6,14 @@ from deepdiff import DeepDiff
 import urllib.parse
 from artemis import utils, default_checker
 
+
 def journey_to_line_sequence(journey):
     result = []
     for section in journey["sections"]:
         if section["type"] == "public_transport":
             line = None
             for link in section["links"]:
-                if link["type"] == "line" :
+                if link["type"] == "line":
                     line = link["id"]
             result.append(line)
     return result
@@ -85,7 +86,8 @@ def response_diff(ref_dict, resp_dict):
             report_message = "\n".join([report_message, message])
     return report_message
 
-def add_to_csv_report(ref_dict, resp_dict, test_name): 
+
+def add_to_csv_report(ref_dict, resp_dict, test_name):
 
     ref_journeys = copy.deepcopy(ref_dict.get("journeys", []))
     resp_journeys = copy.deepcopy(resp_dict.get("journeys", []))
@@ -96,13 +98,12 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
     filtered_ref_journeys = filtered_ref_dict.get("journeys", [])
     filtered_resp_journeys = filtered_resp_dict.get("journeys", [])
 
-
-
-
-    mask = utils.BlackListMask([ ('$..type', lambda x: None)])
+    mask = utils.BlackListMask([("$..type", lambda x: None)])
     refs = mask.filter(filtered_ref_journeys)
     resps = mask.filter(filtered_resp_journeys)
 
+    if refs is None or resps is None:
+        return
 
     deleted = []
     moved = []
@@ -117,43 +118,47 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
             if ref_lines == resp_lines:
                 found = True
                 is_new[resp_index] = False
-                if ref != resp :                  
-                    if ref_index == resp_index :
+                if ref != resp:
+                    if ref_index == resp_index:
                         updated.append("{}".format(ref_index))
-                    else :
+                    else:
                         updated.append("{} -> {}".format(ref_index, resp_index))
-                elif ref_index != resp_index :
+                elif ref_index != resp_index:
                     moved.append("{} -> {}".format(ref_index, resp_index))
                 break
-        if not found :
+        if not found:
             deleted.append(ref_index)
-                    
-            
+
     news = [i for i, it_is_new in enumerate(is_new) if it_is_new]
 
+    csv_report_path = os.path.join(config["RESPONSE_FILE_PATH"], "report.csv")
 
-    csv_report_path = os.path.join(
-        config["RESPONSE_FILE_PATH"], "report.csv"
-    )
-
-    nb_of_journey_variation = (len(resps) - len(refs)) *100./(1.*len(refs)) 
+    nb_of_journey_variation = (len(resps) - len(refs)) * 100.0 / (1.0 * len(refs))
 
     report_file_exists = os.path.exists(csv_report_path)
     reading_mode = "a" if report_file_exists else "w"
     with open(csv_report_path, reading_mode) as csv_report:
         if not report_file_exists:
-            csv_report.write("test name; nb_refs; variation; nb_discarded; nb_added; nb_updated; ; deleted; new; updated; moved\n")
-        csv_report.write("{};{};{};{};{};{};;{};{};{};{}\n".format(test_name, 
-                    len(refs), 
-                    "{:+.0f}%".format(nb_of_journey_variation) if len(resps) != len(refs) else "",
-                    len(deleted) if len(deleted) > 0 else "", 
-                    len(news) if len(news) > 0 else "", 
-                    len(updated) if len(updated) > 0 else "",
-                    deleted if len(deleted) > 0 else "",
-                    news if len(news) > 0 else "",
-                    updated if len(updated) > 0 else "",
-                    moved if len(moved) > 0 else "",
-                    ))
+            csv_report.write(
+                "test name; nb_refs; variation; nb_discarded; nb_added; nb_updated; ; deleted; new; updated; moved\n"
+            )
+        csv_report.write(
+            "{};{};{};{};{};{};;{};{};{};{}\n".format(
+                test_name,
+                len(refs),
+                "{:+.0f}%".format(nb_of_journey_variation)
+                if len(resps) != len(refs)
+                else "",
+                len(deleted) if len(deleted) > 0 else "",
+                len(news) if len(news) > 0 else "",
+                len(updated) if len(updated) > 0 else "",
+                deleted if len(deleted) > 0 else "",
+                news if len(news) > 0 else "",
+                updated if len(updated) > 0 else "",
+                moved if len(moved) > 0 else "",
+            )
+        )
+
 
 def add_to_report(test_name, test_query, report_message):
     failures_report_path = os.path.join(
