@@ -4,7 +4,7 @@ import copy
 from artemis.configuration_manager import config
 from deepdiff import DeepDiff
 import urllib.parse
-from artemis import utils, default_checker
+from artemis import default_checker
 
 
 def journey_to_line_sequence(journey):
@@ -142,17 +142,16 @@ def average_fallback_durations(journeys):
         if len(journey["sections"]) <= 1:
             continue
         first_section = journey["sections"][0]
-        if first_section["type"] == "street_network":
+        first_is_street_network = first_section["type"] == "street_network"
+        if first_is_street_network:
             start_count += 1
             total_start_fallback += first_section["duration"]
         last_section = journey["sections"][-1]
-        if last_section["type"] == "street_network":
+        last_is_street_network = last_section["type"] == "street_network"
+        if last_is_street_network:
             end_count += 1
             total_end_fallback += last_section["duration"]
-        if (
-            first_section["type"] == "street_network"
-            or last_section["type"] == "street_network"
-        ):
+        if first_is_street_network or last_is_street_network:
             start_or_end_count += 1
 
     average_start_fallback = (
@@ -255,48 +254,40 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
 
     news = [i for i, it_is_new in enumerate(is_new) if it_is_new]
 
-    ref_average_start_fallback, ref_average_end_fallback, ref_average_fallback = average_fallback_durations(
+    ref_start_fallback, ref_end_fallback, ref_fallback = average_fallback_durations(
         refs
     )
-    resp_average_start_fallback, resp_average_end_fallback, resp_average_fallback = average_fallback_durations(
+    resp_start_fallback, resp_end_fallback, resp_fallback = average_fallback_durations(
         resps
     )
 
     start_fallback_variation = (
         "{:+.0f}".format(
-            (resp_average_start_fallback - ref_average_start_fallback)
-            * 100
-            / ref_average_start_fallback
+            (resp_start_fallback - ref_start_fallback) * 100 / ref_start_fallback
         )
-        if ref_average_start_fallback > 0.0
+        if ref_start_fallback > 0.0
         else ""
     )
     end_fallback_variation = (
         "{:+.0f}".format(
-            (resp_average_end_fallback - ref_average_end_fallback)
-            * 100
-            / ref_average_end_fallback
+            (resp_end_fallback - ref_end_fallback) * 100 / ref_end_fallback
         )
-        if ref_average_end_fallback > 0.0
+        if ref_end_fallback > 0.0
         else ""
     )
     fallback_variation = (
-        "{:+.0f}".format(
-            (resp_average_fallback - ref_average_fallback) * 100 / ref_average_fallback
-        )
-        if ref_average_fallback > 0.0
+        "{:+.0f}".format((resp_fallback - ref_fallback) * 100 / ref_fallback)
+        if ref_fallback > 0.0
         else ""
     )
 
-    ref_average_nb_pt_sections = average_nb_pt_section(refs)
-    resp_average_nb_pt_sections = average_nb_pt_section(resps)
+    ref_nb_pt_sections = average_nb_pt_section(refs)
+    resp_nb_pt_sections = average_nb_pt_section(resps)
     nb_pt_section_variation = (
         "{:+.0f}".format(
-            (resp_average_nb_pt_sections - ref_average_nb_pt_sections)
-            * 100
-            / ref_average_nb_pt_sections
+            (resp_nb_pt_sections - ref_nb_pt_sections) * 100 / ref_nb_pt_sections
         )
-        if ref_average_nb_pt_sections > 0.0
+        if ref_nb_pt_sections > 0.0
         else ""
     )
 
@@ -383,31 +374,25 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
                     "{}".format(news) if len(news) > 0 else "",
                     "{}".format(updated) if len(updated) > 0 else "",
                     "{}".format(moved) if len(moved) > 0 else "",
-                    "{:.0f}".format(ref_average_start_fallback),
-                    "{:.0f}".format(resp_average_start_fallback),
-                    "{:.0f}".format(
-                        resp_average_start_fallback - ref_average_start_fallback
-                    ),
+                    "{:.0f}".format(ref_start_fallback),
+                    "{:.0f}".format(resp_start_fallback),
+                    "{:.0f}".format(resp_start_fallback - ref_start_fallback),
                     "{}".format(start_fallback_variation),
-                    "{:.0f}".format(ref_average_end_fallback),
-                    "{:.0f}".format(resp_average_end_fallback),
-                    "{:.0f}".format(
-                        resp_average_end_fallback - ref_average_end_fallback
-                    ),
+                    "{:.0f}".format(ref_end_fallback),
+                    "{:.0f}".format(resp_end_fallback),
+                    "{:.0f}".format(resp_end_fallback - ref_end_fallback),
                     "{}".format(end_fallback_variation),
-                    "{:.0f}".format(ref_average_fallback),
-                    "{:.0f}".format(resp_average_fallback),
-                    "{:.0f}".format(resp_average_fallback - ref_average_fallback),
+                    "{:.0f}".format(ref_fallback),
+                    "{:.0f}".format(resp_fallback),
+                    "{:.0f}".format(resp_fallback - ref_fallback),
                     "{}".format(fallback_variation),
                     "{:.0f}".format(ref_average_walking),
                     "{:.0f}".format(resp_average_walking),
                     "{:.0f}".format(resp_average_walking - ref_average_walking),
                     "{}".format(walking_variation),
-                    "{:.2f}".format(ref_average_nb_pt_sections),
-                    "{:.2f}".format(resp_average_nb_pt_sections),
-                    "{:.2f}".format(
-                        resp_average_nb_pt_sections - ref_average_nb_pt_sections
-                    ),
+                    "{:.2f}".format(ref_nb_pt_sections),
+                    "{:.2f}".format(resp_nb_pt_sections),
+                    "{:.2f}".format(resp_nb_pt_sections - ref_nb_pt_sections),
                     "{}".format(nb_pt_section_variation),
                     "{}".format(refs_use_same_line_consecutively)
                     if refs_use_same_line_consecutively
