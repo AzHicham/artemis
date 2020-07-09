@@ -168,6 +168,14 @@ def average_fallback_durations(journeys):
     return (average_start_fallback, average_end_fallback, average_fallback)
 
 
+def walking_duration_of(journey):
+    total_walking_duration = 0
+    for section in journey["sections"]:
+        if section["type"] == "street_network" or section["type"] == "transfer":
+            total_walking_duration += section["duration"]
+    return total_walking_duration
+
+
 def average_walking_duration(journeys):
     total_walking_duration = 0.0
     count = 0
@@ -187,20 +195,51 @@ def average_walking_duration(journeys):
     return average_walking
 
 
+def nb_pt_section(journey):
+    nb_pt_section_in_journey = 0
+    for section in journey["sections"]:
+        if section["type"] == "public_transport":
+            nb_pt_section_in_journey += 1
+    return nb_pt_section_in_journey
+
+
 def average_nb_pt_section(journeys):
     total_nb_pt_section = 0.0
     count = 0
     for journey in journeys:
-        nb_pt_section_in_journey = 0.0
-        for section in journey["sections"]:
-            if section["type"] == "public_transport":
-                nb_pt_section_in_journey += 1
+        nb_pt_section_in_journey = nb_pt_section(journey)
 
         if nb_pt_section_in_journey > 0:
             total_nb_pt_section += nb_pt_section_in_journey
             count += 1
 
     return total_nb_pt_section / (1.0 * count) if count > 0 else 0.0
+
+
+def nb_journey_with_k_pt_section(journeys, k):
+    count = 0
+    for journey in journeys:
+        nb_pt_section_in_journey = nb_pt_section(journey)
+        if nb_pt_section_in_journey == k:
+            count += 1
+    return count
+
+
+def pt_section_distribution(journeys):
+    distribution = [nb_journey_with_k_pt_section(k) for k in range(10)]
+    return distribution
+
+
+def nb_max_pt_section(journeys):
+    nb_max = 0
+    for journey in journeys:
+        nb_pt_section_in_journey = nb_pt_section(journey)
+        nb_max = max(nb_max, nb_pt_section_in_journey)
+    return nb_max
+
+
+def nb_pt_section_in_best(journeys):
+    return nb_pt_section(journeys[0])
 
 
 def add_to_csv_report(ref_dict, resp_dict, test_name):
@@ -355,7 +394,11 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
                     "nb_pt_sections_variation (absolute);"
                     "nb_pt_sections_variation (%);"
                     "refs_use_same_line_consecutively;"
-                    "resps_use_same_line_consecutively"
+                    "resps_use_same_line_consecutively;"
+                    "ref_nb_pt_section_in_best;"
+                    "resp_nb_pt_section_in_best;"
+                    "ref_nb_max_pt_section;"
+                    "resp_nb_max_pt_section;"
                     "\n"
                 )
             )
@@ -400,10 +443,56 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
                     "{}".format(resps_use_same_line_consecutively)
                     if resps_use_same_line_consecutively
                     else "",
+                    "{}".format(nb_pt_section_in_best(refs)),
+                    "{}".format(nb_pt_section_in_best(resps)),
+                    "{}".format(nb_max_pt_section(refs)),
+                    "{}".format(nb_max_pt_section(resps)),
                     "\n",
                 ]
             )
         )
+
+    nb_max_section = 7
+
+    pt_section_distribution_report_path = csv_report_path = os.path.join(
+        config["RESPONSE_FILE_PATH"], "report_distribution.csv"
+    )
+    report_file_exists = os.path.exists(pt_section_distribution_report_path)
+    reading_mode = "a" if report_file_exists else "w"
+    with open(csv_report_path, reading_mode) as csv_report:
+        if not report_file_exists:
+            csv_report.write("test_name;")
+            for i in range(nb_max_section):
+                csv_report.write("ref_{};".format(i))
+            for i in range(nb_max_section):
+                csv_report.write("resp_{};".format(i))
+
+            for i in range(nb_max_section):
+                csv_report.write("ref_{}_walk;".format(i))
+            for i in range(nb_max_section):
+                csv_report.write("resp_{}_walk;".format(i))
+            csv_report.write("\n")
+        else:
+            csv_report.write("{};".format(test_name))
+            for i in range(nb_max_section):
+                nb_journey = nb_journey_with_k_pt_section(refs, i)
+                csv_report.write("{};".format(nb_journey))
+            for i in range(nb_max_section):
+                nb_journey = nb_journey_with_k_pt_section(resps, i)
+                csv_report.write("{};".format(nb_journey))
+            for i in range(nb_max_section):
+                total_walking = 0
+                for journey in refs:
+                    if nb_pt_section(journey) == i:
+                        total_walking += walking_duration_of(journey)
+                csv_report.write("{};".format(total_walking))
+            for i in range(nb_max_section):
+                total_walking = 0
+                for journey in resps:
+                    if nb_pt_section(journey) == i:
+                        total_walking += walking_duration_of(journey)
+                csv_report.write("{};".format(total_walking))
+            csv_report.write("\n")
 
 
 def add_to_report(test_name, test_query, report_message):
