@@ -7,7 +7,12 @@ import pytest
 @dataset([DataSet("prolong-auto")])
 class ProlongAuto(object):
     """
-    TODO: put there comments about the dataset
+    The dataset provide service prolongation examples.
+
+    This means that different vehicle journeys are actually the same physical vehicle.
+    This can be seen with bus or tramway when their head sign changes along the way.
+    It allows passengers to continue their journey while staying in the same vehicle.
+    This is achieve in the data with the same `block_id` in trips.txt
     """
 
     def test_prolong_auto_01(self):
@@ -30,6 +35,13 @@ class ProlongAuto(object):
             _from="stop_area:PRA:SA:1",
             to="stop_area:PRA:SA:5",
             datetime="20041213T0700",
+        )
+
+    def test_prolong_auto_04(self):
+        self.journey(
+            _from="stop_point:OPSP:SP:Nav0",
+            to="stop_point:OPSP:SP:Nav3",
+            datetime="20040101T100000",
         )
 
 
