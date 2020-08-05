@@ -323,3 +323,22 @@ class TestAuvergneExperimental(Auvergne, ArtemisTestFixture):
             first_section_mode=["taxi"],
             last_section_mode=["taxi"],
         )
+
+    def test_direct_path_car_park_and_ride(self):
+        self.journey(
+            _from="3.07789;45.79422",
+            to="3.12027;45.75890",
+            datetime="20160121T170000",
+            first_section_mode=["car"],
+            last_section_mode=["walking"],
+            max_duration=0,
+        )
+
+    def test_pt_with_car_park_and_ride(self):
+        self.journey(
+            _from="3.07789;45.79422",
+            to="3.12027;45.75890",
+            datetime="20160121T170000",
+            first_section_mode=["car"],
+            last_section_mode=["walking"],
+        )

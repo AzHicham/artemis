@@ -8,6 +8,7 @@ psycopg2>=2.6.1
 docker==3.6.0
 ujson
 jsondiff==1.2.0
+deepdiff==5.0.0
 six
 black==18.9b0; python_version >= '3.6.0'
 mypy==0.670; python_version > '3.0'
