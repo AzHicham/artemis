@@ -14,7 +14,7 @@ pipeline {
     }
     post {
         cleanup { sh 'make clean' }
-        failure { echo 'Job has failed' }
-        success { echo 'Job is successful' }
+        failure { sh 'make logs' }
+        success { echo 'Job is successful, HO YEAH !' }
     }
 }

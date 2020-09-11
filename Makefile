@@ -15,7 +15,7 @@ endef
 start: pull ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
 	$(call docker_compose, up -d)
 
-test: compose build ## Run Artemis tests
+test: start build ## Run Artemis tests
 	docker run \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $$PWD:/usr/src/app \
@@ -43,7 +43,7 @@ clean: ## Remove stopped containers
 	$(call docker_compose, rm --force --stop -v)
 
 logs: ## Display logs
-	$(call docker_compose, logs -f)
+	$(call docker_compose, logs)
 
 ps: ## Display containers information
 	$(call docker_compose, ps)
