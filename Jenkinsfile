@@ -1,32 +1,19 @@
 pipeline {
     agent any
     stages {
-        stage('Docker Compose') {
+        stage('Docker Compose Up') {
             steps {
-                sh 'cd navitia-docker-compose'
-                sh 'docker-compose -f docker-compose.yml -f artemis/docker-artemis-instance.yml up -d'
+                sh 'make start'
             }
         }
-        stage('Build') {
-            agent {
-                dockerfile true
-            }
-            environment {
-                ARTEMIS_LOG_LEVEL='DEBUG'
-                ARTEMIS_USE_ARTEMIS_NG='True'
-                ARTEMIS_URL_JORMUN='http://navitia_jormungandr_1'
-                ARTEMIS_URL_TYR='http://navitia_tyr_web_1'
-                ARTEMIS_DATA_DIR='artemis_data'
-                ARTEMIS_REFERENCE_FILE_PATH='artemis_references'
-                ARTEMIS_CITIES_DB='postgresql://navitia:navitia@navitia_cities_database_1/cities'
-            }
+        stage('Run Artemis Test') {
             steps {
-                echo 'Run pytest'
-                sh 'py.test artemis/tests -x'
+                sh 'make test'
             }
         }
     }
     post {
+        cleanup { sh 'make clean' }
         failure { echo 'Job has failed' }
         success { echo 'Job is successful' }
     }
