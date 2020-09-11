@@ -42,11 +42,18 @@ def load_cities(request):
     """
     Load cities before running the tests
     """
+    log = logging.getLogger(__name__)
 
     def get_last_cities_job():
         r_cities = requests.get(config["URL_TYR"] + "/v0/cities/status")
         r_cities.raise_for_status()
         return json.loads(r_cities.text)["latest_job"]
+
+    @retry(stop_max_delay=300000, wait_fixed=1000)
+    def send_file_to_cities(in_file, url):
+        log.debug("Sending file to {}".format(url))
+        r = requests.post(url, files={"file": in_file})
+        r.raise_for_status()
 
     @retry(
         stop_max_delay=300000,
@@ -68,7 +75,6 @@ def load_cities(request):
         else:
             raise Exception("Couldn't get 'cities' job status")
 
-    log = logging.getLogger(__name__)
     if request.config.getvalue("skip_cities") or request.config.getvalue("check_ref"):
         log.info("skipping cities loading")
         return
@@ -76,12 +82,15 @@ def load_cities(request):
     if config.get("USE_ARTEMIS_NG"):
         log.info("Posting cities")
         url = config["URL_TYR"] + "/v0/cities/"
-        files = {"file": open(config["CITIES_INPUT_FILE"], "rb")}
-        r = requests.post(url, files=files)
-        r.raise_for_status()
+        try:
+            cities_input_file = open(config["CITIES_INPUT_FILE"], "rb")
+            send_file_to_cities(cities_input_file, url)
+            wait_for_cities_completion()
+            log.info("Cities task finished")
+        except Exception as e:
+            print("Error : {}".format(e))
+            raise e
 
-        wait_for_cities_completion()
-        log.info("Cities task finished")
         return
 
     log.info("loading cities database")
