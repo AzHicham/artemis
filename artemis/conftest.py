@@ -49,11 +49,24 @@ def load_cities(request):
         r_cities.raise_for_status()
         return json.loads(r_cities.text)["latest_job"]
 
-    @retry(stop_max_delay=300000, wait_fixed=1000)
-    def send_file_to_cities(in_file, url):
-        log.debug("Sending file to {}".format(url))
-        r = requests.post(url, files={"file": in_file})
-        r.raise_for_status()
+    @retry(
+        stop_max_delay=300000,
+        wait_fixed=1000,
+        retry_on_exception=utils.is_retry_exception,
+    )
+    def wait_for_cities_db():
+        """
+        Wait until the 'cities' database is available
+        """
+        url = config["URL_TYR"] + "/v0/cities/status"
+        r = requests.get(url)
+        log.debug(r.text)
+        if r.status_code == 404:
+            response = json.loads(r.text)
+            if response.get("message") == "cities db not reachable":
+                raise utils.RetryError("Cities database is still upgrading...")
+            else:
+                raise Exception("Couldn't get 'cities' job status")
 
     @retry(
         stop_max_delay=300000,
@@ -80,17 +93,17 @@ def load_cities(request):
         return
 
     if config.get("USE_ARTEMIS_NG"):
+        log.info("Waiting for Cities to be available")
+        wait_for_cities_db()
+
         log.info("Posting cities")
         url = config["URL_TYR"] + "/v0/cities/"
-        try:
-            cities_input_file = open(config["CITIES_INPUT_FILE"], "rb")
-            send_file_to_cities(cities_input_file, url)
-            wait_for_cities_completion()
-            log.info("Cities task finished")
-        except Exception as e:
-            print("Error : {}".format(e))
-            raise e
+        files = {"file": open(config["CITIES_INPUT_FILE"], "rb")}
+        r = requests.post(url, files=files)
+        r.raise_for_status()
 
+        wait_for_cities_completion()
+        log.info("Cities task finished")
         return
 
     log.info("loading cities database")
