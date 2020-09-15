@@ -15,7 +15,7 @@ endef
 start: pull ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
 	$(call docker_compose, up -d)
 
-test: start build ## Run Artemis tests
+test: build ## Run Artemis tests
 	docker run \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $$PWD:/usr/src/app \
