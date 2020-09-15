@@ -28,7 +28,7 @@ test: start build ## Run Artemis tests
 		-e ARTEMIS_REFERENCE_FILE_PATH='artemis_references' \
 		-e ARTEMIS_CITIES_DB='postgresql://navitia:navitia@${PROJECT_NAME}_cities_database_1/cities' \
 		--rm \
-		artemis py.test artemis/tests -x
+		artemis py.test artemis/tests
 
 build: ## Build Artemis docker image
 	docker build -t artemis .
