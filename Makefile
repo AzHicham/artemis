@@ -1,4 +1,4 @@
-.PHONY: compose test stop
+.PHONY: compose test stop logs ps
 .DEFAULT_GOAL := help
 
 PROJECT_NAME:=artemis
@@ -12,8 +12,8 @@ define docker_compose
 	docker-compose -f navitia-docker-compose/docker-compose.yml -f navitia-docker-compose/artemis/docker-artemis-instance.yml ${1}
 endef
 
-start: pull ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
-	$(call docker_compose, up -d)
+start: ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
+	$(call docker_compose, up --detach)
 
 test: build ## Run Artemis tests
 	docker run \
@@ -28,19 +28,23 @@ test: build ## Run Artemis tests
 		-e ARTEMIS_REFERENCE_FILE_PATH='artemis_references' \
 		-e ARTEMIS_CITIES_DB='postgresql://navitia:navitia@${PROJECT_NAME}_cities_database_1/cities' \
 		--rm \
-		artemis py.test artemis/tests
+		artemis py.test artemis/tests/bibus_test.py -x --capture=no --showlocals --full-trace
 
 build: ## Build Artemis docker image
 	docker build -t artemis .
 
-pull: ## Pull container images
-	$(call docker_compose, pull)
+pull: ## Pull data and container images
+	cd artemis_data && git lfs pull # Separate pull as submodule LFS pull is poorly supported
+	$(call docker_compose, pull --quiet)
 
 stop: ## Tear down Navitia stack
 	$(call docker_compose, down  --volumes --remove-orphans)
 
 clean: ## Remove stopped containers
 	$(call docker_compose, rm --force --stop -v)
+
+logsf: ## Display logs and follow
+	$(call docker_compose, logs --follow)
 
 logs: ## Display logs
 	$(call docker_compose, logs)

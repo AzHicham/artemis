@@ -157,7 +157,7 @@ class DataSet(object):
     def __init__(
         self,
         name,
-        reload_timeout=datetime.timedelta(minutes=2),
+        reload_timeout=datetime.timedelta(minutes=4),
         fixed_wait=datetime.timedelta(seconds=2),
         scenario="default",
     ):
