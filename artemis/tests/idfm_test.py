@@ -35,7 +35,7 @@ IDFM_PARAMS.update(
     [
         DataSet(
             "idfm",
-            reload_timeout=datetime.timedelta(minutes=10),
+            reload_timeout=datetime.timedelta(minutes=15),
             fixed_wait=datetime.timedelta(seconds=20),
         )
     ]

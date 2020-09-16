@@ -10,6 +10,8 @@ pipeline {
                         passphraseVariable: '',
                         usernameVariable: 'jenkins-kisio-core')
                 ]) {
+                    // We have to manually pull data from artemis_data,
+                    // because pulling LFS repos from submodule isn't supported yet.
                     sh '''
                         eval `ssh-agent`
                         ssh-add $SSH_KEY_FILE
