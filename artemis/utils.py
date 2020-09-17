@@ -220,11 +220,11 @@ class BlackListMask(object):
     ... 'tete': ('tuple1', ['ltuple1', 'ltuple2']),
     ... 'titi': [{'a':1}, {'b':1, 'a': -1}]}
     >>> bl = BlackListMask([('$..bob', lambda x: None)])
-    >>> print bl.filter(bobette)
+    >>> print(bl.filter(bobette))
     {'tata': [1, 2], 'toto': {'bobette': 13, 'bob': None, 'nested_bob': {'bob': None}}, 'tutu': 1, 'tete': ('tuple1', ['ltuple1', 'ltuple2']), 'titi': [{'a': 1}, {'a': -1, 'b': 1}]}
     >>> from functools import partial
     >>> bl = BlackListMask([('$.titi', partial(sorted, key=lambda x: x.get('a')))])
-    >>> print bl.filter(bobette).get('titi')
+    >>> print(bl.filter(bobette).get('titi'))
     [{'a': -1, 'b': 1}, {'a': 1}]
     """
 

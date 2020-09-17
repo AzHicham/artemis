@@ -24,10 +24,13 @@ REFERENCE_FILE_PATH = os.getenv("ARTEMIS_REFERENCE_FILE_PATH", "reference")
 # Path to Create responses and references files, when there is a fail
 RESPONSE_FILE_PATH = os.getenv("ARTEMIS_RESPONSE_FILE_PATH", "output")
 
+base_path = os.path.realpath(os.path.dirname(__file__) + "/..")
 # For ArtemisNG orchestrator, path to the sources of repo 'navitia-docker-compose'
-DOCKER_COMPOSE_PATH = os.getenv("ARTEMIS_DOCKER_COMPOSE_PATH")
+DOCKER_COMPOSE_PATH = os.getenv(
+    "ARTEMIS_DOCKER_COMPOSE_PATH", base_path + "/navitia-docker-compose"
+)
 # For ArtemisNG orchestrator, path to the root of artemis tests sources
-TEST_PATH = os.getenv("ARTEMIS_TEST_PATH")
+TEST_PATH = os.getenv("ARTEMIS_TEST_PATH", base_path + "/artemis/tests")
 
 TYR_DIR = "/srv/tyr"
 
@@ -45,7 +48,9 @@ JORMUNGANDR_DB = (
     "dbname=jormungandr user=jormungandr host=localhost password=jormungandr"
 )
 
-CITIES_DB = "dbname=cities user=navitia host=localhost password=password"
+CITIES_DB = os.getenv(
+    "ARTEMIS_CITIES_DB", "dbname=cities user=navitia host=localhost password=password"
+)
 
 CONTAINER_DATA_INPUT_PATH = "/srv/ed/input"
 

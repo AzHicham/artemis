@@ -1,0 +1,9 @@
+[submodule "navitia-docker-compose"]
+	path = navitia-docker-compose
+	url = git@github.com:CanalTP/navitia-docker-compose.git
+[submodule "artemis_data"]
+	path = artemis_data
+	url = git@github.com:CanalTP/artemis_data.git
+[submodule "artemis_references"]
+	path = artemis_references
+	url = git@github.com:CanalTP/artemis_references.git

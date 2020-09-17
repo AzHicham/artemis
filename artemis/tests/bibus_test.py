@@ -3,12 +3,13 @@ from artemis.default_checker import stop_schedule_checker
 from artemis.common_fixture import dataset, DataSet, set_scenario
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
+import datetime
 
 xfail = pytest.mark.xfail
 
 
 @pytest.mark.Bibus
-@dataset([DataSet("bibus")])
+@dataset([DataSet("bibus", reload_timeout=datetime.timedelta(minutes=5))])
 class Bibus(object):
     """
     """

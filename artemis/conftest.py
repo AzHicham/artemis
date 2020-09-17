@@ -42,11 +42,31 @@ def load_cities(request):
     """
     Load cities before running the tests
     """
+    log = logging.getLogger(__name__)
 
     def get_last_cities_job():
         r_cities = requests.get(config["URL_TYR"] + "/v0/cities/status")
         r_cities.raise_for_status()
         return json.loads(r_cities.text)["latest_job"]
+
+    @retry(
+        stop_max_delay=300000,
+        wait_fixed=1000,
+        retry_on_exception=utils.is_retry_exception,
+    )
+    def wait_for_cities_db():
+        """
+        Wait until the 'cities' database is available
+        """
+        url = config["URL_TYR"] + "/v0/cities/status"
+        r = requests.get(url)
+        log.debug(r.text)
+        if r.status_code == 404:
+            response = json.loads(r.text)
+            if response.get("message") == "cities db not reachable":
+                raise utils.RetryError("Cities database is still upgrading...")
+            else:
+                raise Exception("Couldn't get 'cities' job status")
 
     @retry(
         stop_max_delay=300000,
@@ -68,12 +88,14 @@ def load_cities(request):
         else:
             raise Exception("Couldn't get 'cities' job status")
 
-    log = logging.getLogger(__name__)
     if request.config.getvalue("skip_cities") or request.config.getvalue("check_ref"):
         log.info("skipping cities loading")
         return
 
     if config.get("USE_ARTEMIS_NG"):
+        log.info("Waiting for Cities to be available")
+        wait_for_cities_db()
+
         log.info("Posting cities")
         url = config["URL_TYR"] + "/v0/cities/"
         files = {"file": open(config["CITIES_INPUT_FILE"], "rb")}

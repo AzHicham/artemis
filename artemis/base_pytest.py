@@ -293,9 +293,11 @@ class ArtemisTestFixture(CommonTestFixture):
                 dataset_types_to_process.append(dataset_type)
 
         for dataset_type in dataset_types_to_process:
+            logger.info("Wait for dataset {}".format(dataset_type))
             wait_for_data_processing(dataset_type, current_utc_datetime)
 
         # Wait until data is reloaded
+        logger.info("Wait for Kraken to reload : {}".format(data_set.name))
         wait_for_kraken_reload(last_reload_time, data_set.name)
 
     @classmethod

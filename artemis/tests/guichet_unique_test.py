@@ -12,7 +12,7 @@ COVERAGE = "guichet-unique"
     [
         DataSet(
             COVERAGE,
-            reload_timeout=datetime.timedelta(minutes=6),
+            reload_timeout=datetime.timedelta(minutes=9),
             fixed_wait=datetime.timedelta(seconds=5),
         )
     ]
