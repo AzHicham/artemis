@@ -28,6 +28,10 @@ pipeline {
         }
     }
     post {
+        always {
+            archiveArtifacts artifacts: 'output/*', fingerprint: true
+            junit 'junit/*.xml'
+        }
         failure { sh 'make logs' }
         success { echo 'Job is successful, HO YEAH !' }
         cleanup { sh 'make clean' }

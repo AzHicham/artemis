@@ -2,7 +2,6 @@
 .DEFAULT_GOAL := help
 
 PROJECT_NAME:=artemis
-ARTEMIS_LOG_LEVEL:=INFO
 
 define docker_compose
 	COMPOSE_PROJECT_NAME=${PROJECT_NAME} \
@@ -22,7 +21,7 @@ define run_artemis
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $$PWD:/usr/src/app \
 		--network=${PROJECT_NAME}_default \
-		-e ARTEMIS_LOG_LEVEL=${ARTEMIS_LOG_LEVEL} \
+		-e ARTEMIS_LOG_LEVEL=${1} \
 		-e ARTEMIS_DATA_DIR='artemis_data' \
 		-e ARTEMIS_REFERENCE_FILE_PATH='artemis_references' \
 		-e ARTEMIS_USE_ARTEMIS_NG=True \
@@ -32,17 +31,17 @@ define run_artemis
 		-e ARTEMIS_KIRIN_DB='postgresql://navitia:navitia@${PROJECT_NAME}_kirin_database_1/kirin' \
 		-e ARTEMIS_CITIES_DB='postgresql://navitia:navitia@${PROJECT_NAME}_cities_database_1/cities' \
 		--rm \
-		artemis py.test artemis/tests ${1}
+		artemis py.test --junit-xml=./junit/artemis.junit.xml artemis/tests/${2} ${3} ${4}
 endef
 
 start: ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
 	$(call docker_compose, up --detach)
 
 test: build ## Run Artemis tests
-	$(call run_artemis, --junit-xml=artemis.junit.xml)
+	$(call run_artemis,INFO,${PYTEST})
 
 debug: build
-	$(call run_artemis, -x --capture=no --showlocals)
+	$(call run_artemis,DEBUG,${PYTEST}, -x --capture=no --showlocals, ${PYTEST_ARGS})
 
 build: ## Build Artemis docker image
 	docker build -t artemis .
