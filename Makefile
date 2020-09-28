@@ -38,10 +38,10 @@ start: ## Deploy Navitia stack and Artemis instances using navitia-docker-compos
 	$(call docker_compose, up --detach)
 
 test: build ## Run Artemis tests
-	$(call run_artemis,INFO,${PYTEST})
+	$(call run_artemis,INFO,${PYTEST}, ${PYTEST_ARGS})
 
 debug: build
-	$(call run_artemis,DEBUG,${PYTEST}, -x --capture=no --showlocals, ${PYTEST_ARGS})
+	$(call run_artemis,DEBUG,${PYTEST}, ${PYTEST_ARGS}, --capture=no --showlocals)
 
 build: ## Build Artemis docker image
 	docker build -t artemis .
