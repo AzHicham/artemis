@@ -37,13 +37,6 @@ class ProlongAuto(object):
             datetime="20041213T0700",
         )
 
-    def test_prolong_auto_04(self):
-        self.journey(
-            _from="stop_point:OPSP:SP:Nav0",
-            to="stop_point:OPSP:SP:Nav3",
-            datetime="20040101T100000",
-        )
-
 
 @set_scenario({"prolong-auto": {"scenario": "new_default"}})
 class TestProlongAutoNewDefault(ProlongAuto, ArtemisTestFixture):
