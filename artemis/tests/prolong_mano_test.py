@@ -24,6 +24,13 @@ class ProlongMano(object):
             datetime="20041213T0700",
         )
 
+    def test_prolong_mano_03(self):
+        self.journey(
+            _from="stop_point:PRM:SP:Nav1",
+            to="stop_point:PRM:SP:Nav4",
+            datetime="20040101T100000",
+        )
+
 
 @set_scenario({"prolong-mano": {"scenario": "new_default"}})
 class TestProlongManoNewDefault(ProlongMano, ArtemisTestFixture):
