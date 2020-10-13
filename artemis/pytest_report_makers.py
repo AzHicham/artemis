@@ -18,6 +18,7 @@ def journey_to_line_sequence(journey):
             result.append(line)
     return result
 
+
 def count_roots(values_changed):
     """
     Json diff example :
@@ -86,6 +87,7 @@ def response_diff(ref_dict, resp_dict):
             report_message = "\n".join([report_message, message])
     return report_message
 
+
 def journey_use_same_line_consecutively(journey):
     line_sequence = journey_to_line_sequence(journey)
     if len(line_sequence) == 0:
@@ -96,39 +98,6 @@ def journey_use_same_line_consecutively(journey):
             return True
         prev_line = line
     return False
-
-
-def journeys_diff(ref_dict, resp_dict):
-    ref_journeys = ref_dict.get("journeys", [])
-    resp_journeys = resp_dict.get("journeys", [])
-
-    if not ref_journeys and not resp_journeys:
-        diff = {}
-    elif not ref_journeys and resp_journeys:
-        diff = {jsondiff.symbols.insert: [[i, j] for i, j in enumerate(resp_journeys)]}
-    elif ref_journeys and not resp_journeys:
-        diff = {jsondiff.symbols.delete: [[i, j] for i, j in enumerate(ref_journeys)]}
-    else:
-        diff = jsondiff.diff(ref_journeys, resp_journeys, syntax="symmetric")
-
-    updated_nb = sum(str(k).isdigit() for k in diff.keys())
-
-    message = (
-        "* new journeys nb: {}\n"
-        "* discarded journeys nb: {}\n"
-        "* updated journeys nb: {}\n"
-        "<details open><summary>CLICK ME</summary><p>\n\n"
-        "```json\n"
-        "{}\n"
-        "```\n"
-        "</p></details>\n"
-    ).format(
-        len(diff.get(jsondiff.symbols.insert, [])),
-        len(diff.get(jsondiff.symbols.delete, [])),
-        updated_nb,
-        json.dumps(diff, indent=2),
-    )
-    return message
 
 
 def average_fallback_durations(journeys):
@@ -259,13 +228,13 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
     refs = copy.deepcopy(filtered_ref_journeys)
     resps = copy.deepcopy(filtered_resp_journeys)
 
+    if refs is None or resps is None:
+        return
+
     for journey in refs:
         journey["type"] = None
     for journey in resps:
         journey["type"] = None
-
-    if refs is None or resps is None:
-        return
 
     deleted = []
     moved = []
