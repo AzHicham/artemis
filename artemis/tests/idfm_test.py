@@ -18,7 +18,6 @@ IDFM_PARAMS = {
     "walking_speed": 1.17,
     "_night_bus_filter_max_factor": 1.3,
     "_final_line_filter": True,
-    "_max_extra_second_pass": 10,
     "_min_journeys_calls": 2,
     "_min_nb_journeys": 1,
 }
