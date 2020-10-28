@@ -7,6 +7,7 @@ import six
 import pytest
 import logging
 from collections import OrderedDict
+from collections.abc import Iterable
 import docker
 import zipfile
 import datetime
@@ -243,7 +244,7 @@ class ArtemisTestFixture(CommonTestFixture):
         # Have the last reload time by Kraken
         last_reload_time = get_last_coverage_loaded_time(cov=data_set.name)
 
-        def valid_data_type_paths(data_types: List[str]) -> List[str]:
+        def valid_data_type_path(data_types: List[str]) -> List[str]:
             """
             Return a list of valid data_types that exist on the file system
             """
@@ -252,58 +253,60 @@ class ArtemisTestFixture(CommonTestFixture):
             }
             return [dt for dt, p in paths.items() if os.path.exists(p)]
 
-        def put_data(data_types: List[str], file_suffix, zipped):
+        def zip_files(files_to_zip: Iterable, archive_filename: str, path: str):
+            """
+            Take a list of file names and zip them altogether.
+            files_to_zip: list of file names to be zipped up.
+            archive_filename: filename of the output archive.
+            path: path where the zip archive will be written to.
+            """
+            with zipfile.ZipFile(archive_filename, "w") as zip:
+                logger.debug("Zipping archive : {}".format(archive_filename))
+                for filename in files_to_zip:
+                    logger.debug("Zipping file : {}".format(filename))
+                    zip.write("{}/{}".format(path, filename), arcname=filename)
 
-            valid_data_types = valid_data_type_paths(data_types)
+                logger.info("Zip file has been created : {}".format(archive_filename))
 
-            if len(valid_data_types) == 0:
-                logger.warning(
-                    "None of the path exist for data types : {}".format(data_types)
-                )
-                return False
+        def put_data(data_types: List[str], file_suffix):
+            for data_type in valid_data_type_path(data_types):
+                path = "{}/{}/{}".format(data_path, data_set.name, data_type)
 
-            # We assume the first valid data type is the correct one
-            data_type = valid_data_types[0]
-            path = "{}/{}/{}".format(data_path, data_set.name, data_type)
-            zip_file = "{}/{}_{}.zip".format(path, data_set.name, data_type)
+                logger.info("putting {} data : {}".format(data_type, path))
+                # get all the files names
 
-            logger.info("putting {} data : {}".format(data_type, path))
-            # get all the files names
-            files = [f for f in os.listdir(path) if f.endswith(file_suffix)]
-
-            if zipped:
                 # put them into a zip
-                with zipfile.ZipFile(zip_file, "w") as zip:
-                    logger.debug("Zipping archive : {}".format(zip_file))
-                    for f in files:
-                        logger.debug("Zipping file : {}".format(f))
-                        zip.write("{}/{}".format(path, f), arcname=f)
+                archive_filename = "{}/{}_{}.zip".format(path, data_set.name, data_type)
+                filenames_to_zip = (
+                    f for f in os.listdir(path) if f.endswith(file_suffix)
+                )
+                zip_files(filenames_to_zip, archive_filename, path)
 
-                logger.info("Zip file has been created : {}".format(zip_file))
+                # send the data to Tyr
+                logger.info(
+                    "Sending {} to {}".format(archive_filename, instance_jobs_url)
+                )
+                files_to_post = {"file": open(archive_filename, "rb")}
+                r = requests.post(instance_jobs_url, files=files_to_post)
+                r.raise_for_status()
 
-            # send the data to Tyr
-            logger.info("Sending {} to {}".format(zip_file, instance_jobs_url))
-            files_to_post = {"file": open(zip_file, "rb")}
-            r = requests.post(instance_jobs_url, files=files_to_post)
-            r.raise_for_status()
-
-            logger.debug("Tyr response : {}".format(r.text))
+                logger.debug("Tyr response : {}".format(r.text))
             return True
 
         # Get current datetime to check jobs created from now
         current_utc_datetime = datetime.datetime.utcnow()
 
-        # List of tuples representing (type of data files, type of dataset, files extension, is zipped)
+        # List of tuples representing (type of data files, type of dataset, files extension)
         data_to_process = [
-            (["fusio"], "fusio", (".txt", ".csv"), True),
-            (["osm"], "osm", ".pbf", True),
-            (["fusio-poi"], "poi", ".txt", True),
-            (["geopal", "fusio-geopal"], "geopal", ".txt", True),
+            (["fusio"], "fusio", (".txt", ".csv")),
+            (["osm"], "osm", ".pbf"),
+            (["fusio-poi"], "poi", ".txt"),
+            (["geopal", "fusio-geopal"], "geopal", ".txt"),
         ]
 
         dataset_types_to_process = []
-        for data_files_type, dataset_type, file_ext, is_zipped in data_to_process:
-            if put_data(data_files_type, file_ext, is_zipped):
+        for data_files_type, dataset_type, file_ext in data_to_process:
+            if put_data(data_files_type, file_ext):
                 dataset_types_to_process.append(dataset_type)
 
         for dataset_type in dataset_types_to_process:
