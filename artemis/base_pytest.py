@@ -7,8 +7,8 @@ import six
 import pytest
 import logging
 from collections import OrderedDict
+from collections.abc import Iterable
 import docker
-import tarfile
 import zipfile
 import datetime
 from retrying import retry
@@ -163,6 +163,10 @@ class ArtemisTestFixture(CommonTestFixture):
 
     @classmethod
     def update_data_by_dataset(cls, data_set):
+        instance_jobs_url = "{base_url}/v0/jobs/{instance}".format(
+            base_url=config["URL_TYR"], instance=data_set
+        )
+
         def get_last_coverage_loaded_time(cov):
             _response, _, _ = utils.request("coverage/{cov}/status".format(cov=cov))
             return _response.get("status", {}).get("last_load_at", "")
@@ -179,9 +183,6 @@ class ArtemisTestFixture(CommonTestFixture):
             :param time_limit: UTC time from when the job could have been created. Allows to exclude jobs from previous bina
             :return: When dataset is "done"
             """
-            instance_jobs_url = "{base_url}/v0/jobs/{instance}".format(
-                base_url=config["URL_TYR"], instance=data_set
-            )
             r = requests.get(instance_jobs_url)
             r.raise_for_status()
             jobs_resp = json.loads(r.text)["jobs"]
@@ -243,53 +244,69 @@ class ArtemisTestFixture(CommonTestFixture):
         # Have the last reload time by Kraken
         last_reload_time = get_last_coverage_loaded_time(cov=data_set.name)
 
-        def put_data(data_type, file_suffix, zipped):
-            path = "{}/{}/{}".format(data_path, data_set.name, data_type)
-            zip_file = "{}/{}_{}.zip".format(path, data_set.name, data_type)
+        def valid_data_type_path(data_types: List[str]) -> List[str]:
+            """
+            Return a list of valid data_types that exist on the file system
+            """
+            paths = {
+                dt: "{}/{}/{}".format(data_path, data_set.name, dt) for dt in data_types
+            }
+            return [dt for dt, p in paths.items() if os.path.exists(p)]
 
-            if os.path.exists(path):
+        def zip_files(files_to_zip: Iterable, archive_filename: str, path: str):
+            """
+            Take a list of file names and zip them altogether.
+            files_to_zip: list of file names to be zipped up.
+            archive_filename: filename of the output archive.
+            path: path where the zip archive will be written to.
+            """
+            with zipfile.ZipFile(archive_filename, "w") as zip:
+                logger.debug("Zipping archive : {}".format(archive_filename))
+                for filename in files_to_zip:
+                    logger.debug("Zipping file : {}".format(filename))
+                    zip.write("{}/{}".format(path, filename), arcname=filename)
+
+                logger.info("Zip file has been created : {}".format(archive_filename))
+
+        def put_data(data_types: List[str], file_suffix):
+            for data_type in valid_data_type_path(data_types):
+                path = "{}/{}/{}".format(data_path, data_set.name, data_type)
+
                 logger.info("putting {} data : {}".format(data_type, path))
                 # get all the files names
-                files = [f for f in os.listdir(path) if f.endswith(file_suffix)]
 
-                if zipped:
-                    # put them into a zip
-                    with zipfile.ZipFile(zip_file, "w") as zip:
-                        for f in files:
-                            zip.write("{}/{}".format(path, f), arcname=f)
+                # put them into a zip
+                archive_filename = "{}/{}_{}.zip".format(path, data_set.name, data_type)
+                filenames_to_zip = (
+                    f for f in os.listdir(path) if f.endswith(file_suffix)
+                )
+                zip_files(filenames_to_zip, archive_filename, path)
 
-                # put the zip into a tar
-                with tarfile.open("./{}.tar".format(data_type), "w") as tar:
-                    if zipped:
-                        tar.add(zip_file, arcname="{}.zip".format(data_type))
-                    else:
-                        for f in files:
-                            tar.add("{}/{}".format(path, f), arcname=f)
+                # send the data to Tyr
+                logger.info(
+                    "Sending {} to {}".format(archive_filename, instance_jobs_url)
+                )
+                files_to_post = {"file": open(archive_filename, "rb")}
+                r = requests.post(instance_jobs_url, files=files_to_post)
+                r.raise_for_status()
 
-                # send the tar to the volume
-                with open("./{}.tar".format(data_type), "rb") as f:
-                    containers[0].put_archive(input_path, f.read())
-                    return True
-            else:
-                logger.warning("{} path does not exist : {}".format(data_type, path))
-
-            return False
+                logger.debug("Tyr response : {}".format(r.text))
+            return True
 
         # Get current datetime to check jobs created from now
         current_utc_datetime = datetime.datetime.utcnow()
 
-        # List of tuples representing (type of data files, type of dataset, files extension, is zipped)
+        # List of tuples representing (type of data files, type of dataset, files extension)
         data_to_process = [
-            ("fusio", "fusio", (".txt", ".csv"), True),
-            ("osm", "osm", ".pbf", False),
-            ("fusio-poi", "poi", ".txt", True),
-            ("geopal", "geopal", ".txt", True),
-            ("fusio-geopal", "geopal", ".txt", True),
+            (["fusio"], "fusio", (".txt", ".csv")),
+            (["osm"], "osm", ".pbf"),
+            (["fusio-poi"], "poi", ".txt"),
+            (["geopal", "fusio-geopal"], "geopal", ".txt"),
         ]
 
         dataset_types_to_process = []
-        for data_files_type, dataset_type, file_ext, is_zipped in data_to_process:
-            if put_data(data_files_type, file_ext, is_zipped):
+        for data_files_type, dataset_type, file_ext in data_to_process:
+            if put_data(data_files_type, file_ext):
                 dataset_types_to_process.append(dataset_type)
 
         for dataset_type in dataset_types_to_process:
