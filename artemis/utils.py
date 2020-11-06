@@ -209,23 +209,20 @@ def order_response(response):
     }
     """
 
-    def sort_response(dictionary):
-        res = OrderedDict()
-        for k, v in sorted(dictionary.items()):
-            if isinstance(v, dict):
-                res[k] = sort_response(v)
-            elif isinstance(v, list):
-                res[k] = []
-                for item in v:
-                    # Navitia response may contain 2 types of list: [dict] and [str]
-                    # If the item in the list is iterable (dict), recursively sort it
-                    # If the item isn't iterable (str), copy the item as is
-                    res[k].append(sort_response(item)) if hasattr(
-                        item, "items"
-                    ) else res[k].append(item)
-            else:
-                res[k] = v
-        return res
+    def sort_response(resp):
+        """
+        Recursively traverse 'resp' param and sort it's sub-dictionaries by keys.
+        List and other objects are keeping the same order
+        """
+        if isinstance(resp, dict):
+            ordered_dict = OrderedDict()
+            for k, v in sorted(resp.items()):
+                ordered_dict[k] = sort_response(v)
+            return ordered_dict
+        elif isinstance(resp, list):
+            return [sort_response(r) for r in resp]
+
+        return resp
 
     # If the response is an OrderedDict, convert it in dict for sorting iteration
     if isinstance(response, OrderedDict):
