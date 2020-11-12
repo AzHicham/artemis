@@ -268,24 +268,29 @@ class ArtemisTestFixture(CommonTestFixture):
 
                 logger.info("Zip file has been created : {}".format(archive_filename))
 
-        def put_data(data_type: str, file_suffix):
-            path = "{}/{}/{}".format(data_path, data_set.name, data_type)
+        def put_data(data_types: List[str], file_suffix):
+            for data_type in valid_data_type_path(data_types):
+                path = "{}/{}/{}".format(data_path, data_set.name, data_type)
 
-            logger.info("putting {} data : {}".format(data_type, path))
-            # get all the files names
+                logger.info("putting {} data : {}".format(data_type, path))
+                # get all the files names
 
-            # put them into a zip
-            archive_filename = "{}/{}_{}.zip".format(path, data_set.name, data_type)
-            filenames_to_zip = (f for f in os.listdir(path) if f.endswith(file_suffix))
-            zip_files(filenames_to_zip, archive_filename, path)
+                # put them into a zip
+                archive_filename = "{}/{}_{}.zip".format(path, data_set.name, data_type)
+                filenames_to_zip = (
+                    f for f in os.listdir(path) if f.endswith(file_suffix)
+                )
+                zip_files(filenames_to_zip, archive_filename, path)
 
-            # send the data to Tyr
-            logger.info("Sending {} to {}".format(archive_filename, instance_jobs_url))
-            files_to_post = {"file": open(archive_filename, "rb")}
-            r = requests.post(instance_jobs_url, files=files_to_post)
-            r.raise_for_status()
+                # send the data to Tyr
+                logger.info(
+                    "Sending {} to {}".format(archive_filename, instance_jobs_url)
+                )
+                files_to_post = {"file": open(archive_filename, "rb")}
+                r = requests.post(instance_jobs_url, files=files_to_post)
+                r.raise_for_status()
 
-            logger.debug("Tyr response : {}".format(r.text))
+                logger.debug("Tyr response : {}".format(r.text))
             return True
 
         # Get current datetime to check jobs created from now
@@ -301,8 +306,7 @@ class ArtemisTestFixture(CommonTestFixture):
 
         dataset_types_to_process = []
         for data_files_type, dataset_type, file_ext in data_to_process:
-            for data_type in valid_data_type_path(data_files_type):
-                put_data(data_type, file_ext)
+            if put_data(data_files_type, file_ext):
                 dataset_types_to_process.append(dataset_type)
 
         for dataset_type in dataset_types_to_process:
