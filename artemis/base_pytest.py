@@ -451,8 +451,8 @@ class ArtemisTestFixture(CommonTestFixture):
         reference_text["query"] = http_query.replace(
             config["URL_JORMUN"][7:], "localhost"
         )
-        reference_text["response"] = response_checker.filter(
-            json.loads(response_string)
+        reference_text["response"] = utils.order_response(
+            response_checker.filter(json.loads(response_string))
         )
         reference_text["full_response"] = json.loads(
             response_string.replace(config["URL_JORMUN"][7:], "localhost")

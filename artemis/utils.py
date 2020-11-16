@@ -1,8 +1,7 @@
 """
 Lots of helper functions to ease tests
 """
-import collections
-from collections import deque
+from collections import deque, Iterable, OrderedDict
 import os
 import itertools
 import requests
@@ -177,6 +176,60 @@ def filter_dict(response, mask):
     return flask_restful.marshal(response, mask)
 
 
+def order_response(response):
+    """
+    Sort dictionaries recursively in the json response to guarantee a similar response independently of the run
+    List aren't sorted to maintain significant items order
+
+     Ex: resp = {
+            "dict": {
+                "sub-dict":{
+                    "c": "c",
+                    "a": "a",
+                },
+                "list": ["b", "i", "g", "M"],
+                "dict_list": [
+                    {"2nd_dict": "test2", "param": "p"},
+                    {"param": "p", "1st_dict": "test1"},
+                ]
+            }
+        }
+
+    sort_response(resp)
+    "dict": {
+        "dict_list": [
+            { "2nd_dict": "test2", "param": "p" },
+            { "1st_dict": "test1", "param": "p" }
+        ],
+        "list":  ["b", "i", "g", "M"],
+        "sub-dict": {
+            "a": "a",
+            "c": "c",
+        }
+    }
+    """
+
+    def sort_response(resp):
+        """
+        Recursively traverse 'resp' param and sort it's sub-dictionaries by keys.
+        List and other objects are keeping the same order
+        """
+        if isinstance(resp, dict):
+            ordered_dict = OrderedDict()
+            for k, v in sorted(resp.items()):
+                ordered_dict[k] = sort_response(v)
+            return ordered_dict
+        elif isinstance(resp, list):
+            return [sort_response(r) for r in resp]
+
+        return resp
+
+    # If the response is an OrderedDict, convert it in dict for sorting iteration
+    if isinstance(response, OrderedDict):
+        response = json.loads(json.dumps(response))
+    return sort_response(response)
+
+
 def get_calling_test_function():
     """
     return the calling test method.
@@ -285,7 +338,7 @@ def sort_all_list_dict(response):
     queue = deque()
 
     def magic_sort(elt):
-        if not isinstance(elt, collections.Iterable):
+        if not isinstance(elt, Iterable):
             yield elt
         else:
             to_check = [ARTEMIS_CUSTOM_ID, "uri", "id", "label", "name", "href"]

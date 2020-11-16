@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import logging
 import os
 import shutil
@@ -430,14 +430,20 @@ class ArtemisTestFixture(CommonTestFixture):
 
         # to ease debug, we add additional information to the file
         # only the response elt will be compared, so we can add what we want (additional flags or whatever)
-        enhanced_response = {
-            "query": url,
-            "response": filtered_response,
-            "full_response": response,
-        }
+        enhanced_response = OrderedDict(
+            {
+                "query": url,
+                "response": utils.order_response(filtered_response),
+                "full_response": response,
+            }
+        )
 
         file_ = open(file_complete_path, "w")
-        file_.write(json.dumps(enhanced_response, indent=2, separators=(",", ": ")))
+        file_.write(
+            json.dumps(
+                enhanced_response, indent=2, separators=(",", ": "), sort_keys=False
+            )
+        )
         file_.close()
 
         return filename
