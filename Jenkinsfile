@@ -7,6 +7,8 @@ pipeline {
         string(name: 'ARTEMIS_DATA_BRANCH', defaultValue: 'master', description: 'Artemis_data branch to checkout')
         string(name: 'ARTEMIS_REF_REPO', defaultValue: 'git@github.com:CanalTP/artemis_references.git', description: 'Artemis_references repository address')
         string(name: 'ARTEMIS_REF_BRANCH', defaultValue: 'master', description: 'Artemis_references branch to checkout')
+        string(name: 'NAVITIA_DOCKER_COMPOSE_REPO', defaultValue: 'git@github.com:CanalTP/navitia-docker-compose.git', description: 'Navitia_docker_compose repository address')
+        string(name: 'NAVITIA_DOCKER_COMPOSE_BRANCH', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
     }
     stages {
         stage('Pull data and images') {
@@ -25,6 +27,7 @@ pipeline {
                     git clone ${params.ARTEMIS_REPO} -b ${params.ARTEMIS_BRANCH} .
                     git clone ${params.ARTEMIS_DATA_REPO} -b ${params.ARTEMIS_DATA_BRANCH} ./artemis_data
                     git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_ref
+                    git clone ${params.NAVITIA_DOCKER_COMPOSE_REPO} -b ${params.NAVITIA_DOCKER_COMPOSE_BRANCH} ./artemis_ref
                     make pull
                     """
                 }
