@@ -27,7 +27,7 @@ pipeline {
                     git clone ${params.ARTEMIS_REPO} -b ${params.ARTEMIS_BRANCH} .
                     git clone ${params.ARTEMIS_DATA_REPO} -b ${params.ARTEMIS_DATA_BRANCH} ./artemis_data
                     git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_ref
-                    git clone ${params.NAVITIA_DOCKER_COMPOSE_REPO} -b ${params.NAVITIA_DOCKER_COMPOSE_BRANCH} ./artemis_ref
+                    git clone ${params.NAVITIA_DOCKER_COMPOSE_REPO} -b ${params.NAVITIA_DOCKER_COMPOSE_BRANCH} ./navitia-docker-compose
                     make pull
                     """
                 }
@@ -57,12 +57,12 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'output/**/*', fingerprint: true
             junit 'junit/*.xml'
+            // shutdown dockers
+            sh 'make clean'
         }
         failure { sh 'make logs' }
         success { echo 'Job is successful, HO YEAH !' }
         cleanup {
-            // shutdown dockers
-            sh 'make clean'
             // remove files on disk
             cleanWs()
         }
