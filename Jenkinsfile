@@ -18,17 +18,15 @@ pipeline {
                         passphraseVariable: '',
                         usernameVariable: 'jenkins-kisio-core')
                 ]) {
-                    // We have to manually pull data from artemis_data,
-                    // because pulling LFS repos from submodule isn't supported yet.
-                    sh '''
-                        eval `ssh-agent`
-                        ssh-add $SSH_KEY_FILE
-                        git clone "${params.ARTEMIS_REPO}"      -b "${params.ARTEMIS_BRANCH}" .
-                        git clone "${params.ARTEMIS_DATA_REPO}" -b "${params.ARTEMIS_DATA_BRANCH}" ./artemis_data
-                        git clone "${params.ARTEMIS_REF_REPO}"  -b "${params.ARTEMIS_REF_BRANCH}" ./artemis_ref
-                        make pull
 
-                    '''
+                    sh """
+                    eval `ssh-agent`
+                    ssh-add $SSH_KEY_FILE
+                    git clone ${params.ARTEMIS_REPO} -b ${params.ARTEMIS_BRANCH} .
+                    git clone ${params.ARTEMIS_DATA_REPO} -b ${params.ARTEMIS_DATA_BRANCH} ./artemis_data
+                    git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_ref
+                    make pull
+                    """
                 }
             }
         }
