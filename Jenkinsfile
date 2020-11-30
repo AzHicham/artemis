@@ -26,7 +26,7 @@ pipeline {
                     ssh-add $SSH_KEY_FILE
                     git clone ${params.ARTEMIS_REPO} -b ${params.ARTEMIS_BRANCH} .
                     git clone ${params.ARTEMIS_DATA_REPO} -b ${params.ARTEMIS_DATA_BRANCH} ./artemis_data
-                    git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_ref
+                    git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_references
                     git clone ${params.NAVITIA_DOCKER_COMPOSE_REPO} -b ${params.NAVITIA_DOCKER_COMPOSE_BRANCH} ./navitia-docker-compose
                     make pull
                     """
