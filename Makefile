@@ -54,7 +54,7 @@ pull: ## Pull data and container images
 
 pull_available: ## Pull data and container images
 	cd artemis_data && git lfs pull # Separate pull as submodule LFS pull is poorly supported
-	$(call docker_compose,${TAG}, --ignore-pull-failures)
+	$(call docker_compose,${TAG}, pull --ignore-pull-failures)
 
 stop: ## Tear down Navitia stack
 	$(call docker_compose,${TAG}, down  --volumes --remove-orphans)
