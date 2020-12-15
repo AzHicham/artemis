@@ -3,9 +3,11 @@
 
 PROJECT_NAME:=artemis
 
+TAG:=latest
+
 define docker_compose
 	COMPOSE_PROJECT_NAME=${PROJECT_NAME} \
-	TAG=latest \
+	TAG=${1} \
 	KIRIN_TAG=latest \
 	ASGARD_DATA_TAG=france \
 	ASGARD_APP_TAG=master \
@@ -13,7 +15,7 @@ define docker_compose
 		-f navitia-docker-compose/docker-compose.yml \
 		-f navitia-docker-compose/artemis/docker-artemis-instance.yml \
 		-f navitia-docker-compose/kirin/docker-compose_kirin.yml \
-		${1}
+		${2}
 endef
 
 define run_artemis
@@ -35,7 +37,7 @@ define run_artemis
 endef
 
 start: ## Deploy Navitia stack and Artemis instances using navitia-docker-compose
-	$(call docker_compose, up --detach)
+	$(call docker_compose,${TAG}, up --detach)
 
 test: build ## Run Artemis tests, use PYTEST='sherbrooke_test.py' and PYTEST_ARGS='--skip_bina' envvar
 	$(call run_artemis,INFO,${PYTEST}, ${PYTEST_ARGS})
@@ -48,22 +50,22 @@ build: ## Build Artemis docker image
 
 pull: ## Pull data and container images
 	cd artemis_data && git lfs pull # Separate pull as submodule LFS pull is poorly supported
-	$(call docker_compose, pull --quiet)
+	$(call docker_compose,${TAG}, pull --quiet)
 
 stop: ## Tear down Navitia stack
-	$(call docker_compose, down  --volumes --remove-orphans)
+	$(call docker_compose,${TAG}, down  --volumes --remove-orphans)
 
 clean: ## Remove stopped containers
-	$(call docker_compose, rm --force --stop -v)
+	$(call docker_compose,${TAG}, rm --force --stop -v)
 
 logsf: ## Display logs and follow
-	$(call docker_compose, logs --follow)
+	$(call docker_compose,${TAG}, logs --follow)
 
 logs: ## Display logs
-	$(call docker_compose, logs)
+	$(call docker_compose,${TAG}, logs)
 
 ps: ## Display containers information
-	$(call docker_compose, ps)
+	$(call docker_compose,${TAG}, ps)
 
 config: ## Display Stack configuration
 	$(call docker_compose, config)
