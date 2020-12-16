@@ -1,40 +1,59 @@
 pipeline {
     agent any
     parameters {
-        string(name: 'ARTEMIS_REPO', defaultValue: 'git@github.com:CanalTP/artemis.git', description: 'Artemis repository address')
-        string(name: 'ARTEMIS_BRANCH', defaultValue: 'master', description: 'Artemis branch to checkout')
-        string(name: 'ARTEMIS_DATA_REPO', defaultValue: 'git@github.com:CanalTP/artemis_data.git', description: 'Artemis_data repository address')
-        string(name: 'ARTEMIS_DATA_BRANCH', defaultValue: 'master', description: 'Artemis_data branch to checkout')
-        string(name: 'ARTEMIS_REF_REPO', defaultValue: 'git@github.com:CanalTP/artemis_references.git', description: 'Artemis_references repository address')
-        string(name: 'ARTEMIS_REF_BRANCH', defaultValue: 'master', description: 'Artemis_references branch to checkout')
-        string(name: 'NAVITIA_DOCKER_COMPOSE_REPO', defaultValue: 'git@github.com:CanalTP/navitia-docker-compose.git', description: 'Navitia_docker_compose repository address')
-        string(name: 'NAVITIA_DOCKER_COMPOSE_BRANCH', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
+        string(name: 'artemis_repo', defaultValue: 'CanalTP/artemis', description: 'Artemis gihub repository')
+        string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
+        string(name: 'artemis_data_repo', defaultValue: 'CanalTP/artemis_data', description: 'Artemis_data github repository ')
+        string(name: 'artemis_data_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
+        string(name: 'artemis_ref_repo', defaultValue: 'CanalTP/artemis_references', description: 'Artemis_references github repository ')
+        string(name: 'artemis_ref_branch', defaultValue: 'master', description: 'Artemis_references branch to checkout')
+        string(name: 'navitia_docker_compose_repo', defaultValue: 'CanalTP/navitia-docker-compose', description: 'Navitia_docker_compose github repository')
+        string(name: 'navitia_docker_compose_branch', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
+        choice(
+            name: 'navitia_branch',
+            choices: ['dev', 'release'],
+            description: 'Which branch of navitia to use for artemis tests'
+        )
     }
     stages {
-        stage('Pull data and images') {
+        stage('Pull data') {
             steps {
-                withCredentials([
-                    sshUserPrivateKey(
-                        credentialsId: 'jenkins-core-ssh',
-                        keyFileVariable: 'SSH_KEY_FILE',
-                        passphraseVariable: '',
-                        usernameVariable: 'jenkins-kisio-core')
-                ]) {
-
+                withCredentials(
+                [sshUserPrivateKey(
+                    credentialsId: 'jenkins-core-ssh',
+                    keyFileVariable: 'SSH_KEY_FILE',
+                    passphraseVariable: '',
+                    usernameVariable: 'jenkins-kisio-core')])
+                {
                     sh """
                     eval `ssh-agent`
                     ssh-add $SSH_KEY_FILE
-                    git clone ${params.ARTEMIS_REPO} -b ${params.ARTEMIS_BRANCH} .
-                    git clone ${params.ARTEMIS_DATA_REPO} -b ${params.ARTEMIS_DATA_BRANCH} ./artemis_data
-                    git clone ${params.ARTEMIS_REF_REPO} -b ${params.ARTEMIS_REF_BRANCH} ./artemis_references
-                    git clone ${params.NAVITIA_DOCKER_COMPOSE_REPO} -b ${params.NAVITIA_DOCKER_COMPOSE_BRANCH} ./navitia-docker-compose
-                    make pull
+                    git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} .
+                    git clone git@github.com:${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis_data
+                    git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis_references
+                    git clone git@github.com:${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./navitia-docker-compose
                     """
                 }
             }
         }
-        stage('Docker Compose Up') {
-            steps { sh 'make start' }
+
+        stage('Build docker images') {
+            steps {
+                environment {
+                    BRANCH  = "${params.navitia_branch}"
+                }
+                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+                    dir("./navitia-docker-compose/builder_from_package/") {
+                        sh './build.sh -o $GITHUB_TOKE} -b $BRANCH -t local'
+                    }
+                }
+            }
+        }
+        stage('Pull remaining images') {
+            steps { sh 'make pull_available TAG=local' }
+        }
+        stage('Start all dockers') {
+            steps { sh 'make start TAG=local' }
         }
         stage('Run Artemis Test') {
             environment {
@@ -44,7 +63,7 @@ pipeline {
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
                 PYTEST      = ''
-                PYTEST_ARG  = ''
+                PYTEST_ARGS  = '-k"Experimental"'
             }
 
             steps {
@@ -57,12 +76,14 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'output/**/*', fingerprint: true
             junit 'junit/*.xml'
-            // shutdown dockers
-            sh 'make clean'
         }
-        failure { sh 'make logs' }
+        failure { sh 'make logs TAG=local' }
         success { echo 'Job is successful, HO YEAH !' }
         cleanup {
+            // shutdown dockers
+            sh 'make stop TAG=local'
+            // remove images
+            sh 'make clean_images TAG=local'
             // remove files on disk
             cleanWs()
         }
