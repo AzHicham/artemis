@@ -68,7 +68,10 @@ def response_diff(ref_dict, resp_dict):
                 "{}\n"
                 "</p></details>\n</code></pre>"
             ).format(
-                items_added, items_removed, items_changed, json.dumps(diff, indent=2)
+                items_added,
+                items_removed,
+                items_changed,
+                json.dumps(diff.to_dict(), indent=2),
             )
             report_message = "\n".join([report_message, message])
     return report_message
