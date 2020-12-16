@@ -62,8 +62,10 @@ pipeline {
                 //      PYTEST = 'idfm_test.py'
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
+                // To run only Experimental tests
+                //      PYTEST_ARG = '-k"Experimental"'
                 PYTEST      = ''
-                PYTEST_ARGS  = '-k"Experimental"'
+                PYTEST_ARGS  = ''
             }
 
             steps {
