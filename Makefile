@@ -62,6 +62,9 @@ stop: ## Tear down Navitia stack
 clean: ## Remove stopped containers
 	$(call docker_compose,${TAG}, rm --force --stop -v)
 
+clean_images: ## Remove stopped containers
+	$(call docker_compose,${TAG}, down --rmi all)
+
 logsf: ## Display logs and follow
 	$(call docker_compose,${TAG}, logs --follow)
 
