@@ -28,10 +28,10 @@ pipeline {
                     sh """
                     eval `ssh-agent`
                     ssh-add $SSH_KEY_FILE
-                    git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} .
-                    git clone git@github.com:${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis_data
-                    git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis_references
-                    git clone git@github.com:${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./navitia-docker-compose
+                    git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
+                    git clone git@github.com:${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
+                    git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
+                    git clone git@github.com:${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./artemis/navitia-docker-compose
                     """
                 }
             }
@@ -44,17 +44,25 @@ pipeline {
             steps {
 
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
-                    dir("./navitia-docker-compose/builder_from_package/") {
+                    dir("./artemis/navitia-docker-compose/builder_from_package/") {
                         sh './build.sh -o $GITHUB_TOKEN -b $BRANCH -t local'
                     }
                 }
             }
         }
         stage('Pull remaining images') {
-            steps { sh 'make pull_available TAG=local' }
+            steps {
+                dir("./artemis/") {
+                    sh 'make pull_available TAG=local'
+                }
+            }
         }
         stage('Start all dockers') {
-            steps { sh 'make start TAG=local' }
+            steps {
+                dir("./artemis/") {
+                    sh 'make start TAG=local'
+                }
+            }
         }
         stage('Run Artemis Test') {
             environment {
@@ -68,24 +76,31 @@ pipeline {
             }
 
             steps {
-                sh "make test"
-
+                dir("./artemis/") {
+                    sh "make test"
+                }
             }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive :true, fingerprint: true
-            junit 'junit/*.xml'
+            archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
+            junit 'artemis/junit/*.xml', allowEmptyResults: true
         }
-        failure { sh 'make logs TAG=local' }
+        failure {
+            dir("./artemis/") {
+                sh 'make logs TAG=local'
+            }
+        }
         success { echo 'Job is successful, HO YEAH !' }
         cleanup {
+            dir("./artemis/") {
             // shutdown dockers
-            sh 'make stop TAG=local'
-            // remove images
-            sh 'make clean_images TAG=local'
-            // remove files on disk
+                sh 'make stop TAG=local'
+                // remove images
+                sh 'make clean_images TAG=local'
+                // remove files on disk
+            }
             cleanWs()
         }
     }
