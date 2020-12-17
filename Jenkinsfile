@@ -28,6 +28,7 @@ pipeline {
                     sh """
                     eval `ssh-agent`
                     ssh-add $SSH_KEY_FILE
+                    rm -rf ./artemis
                     git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
                     git clone git@github.com:${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
                     git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
