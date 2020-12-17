@@ -38,13 +38,14 @@ pipeline {
         }
 
         stage('Build docker images') {
+            environment {
+                BRANCH  = "${params.navitia_branch}"
+            }
             steps {
-                environment {
-                    BRANCH  = "${params.navitia_branch}"
-                }
+
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     dir("./navitia-docker-compose/builder_from_package/") {
-                        sh './build.sh -o $GITHUB_TOKE} -b $BRANCH -t local'
+                        sh './build.sh -o $GITHUB_TOKEN -b $BRANCH -t local'
                     }
                 }
             }
@@ -62,8 +63,6 @@ pipeline {
                 //      PYTEST = 'idfm_test.py'
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
-                // To run only Experimental tests
-                //      PYTEST_ARG = '-k"Experimental"'
                 PYTEST      = ''
                 PYTEST_ARGS  = ''
             }
@@ -76,7 +75,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'output/**/*', fingerprint: true
+            archiveArtifacts artifacts: 'output/**/*', allowEmptyArchive :true, fingerprint: true
             junit 'junit/*.xml'
         }
         failure { sh 'make logs TAG=local' }
