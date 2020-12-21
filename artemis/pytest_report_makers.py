@@ -54,6 +54,13 @@ def response_diff(ref_dict, resp_dict):
     report_message = ""
     for req in req_type:
         diff = make_req_diff(ref_dict, resp_dict, req)
+
+        json_diff = ""
+        try:
+            json_diff = json.dumps(diff.to_dict(), indent=2)
+        except Exception:
+            pass
+
         items_added = count_modified_fields(diff)["added"]
         items_removed = count_modified_fields(diff)["removed"]
         items_changed = count_modified_fields(diff)["changed"]
@@ -67,9 +74,7 @@ def response_diff(ref_dict, resp_dict):
                 "<pre><code class='language-json\n'>"
                 "{}\n"
                 "</p></details>\n</code></pre>"
-            ).format(
-                items_added, items_removed, items_changed, json.dumps(diff, indent=2)
-            )
+            ).format(items_added, items_removed, items_changed, json_diff)
             report_message = "\n".join([report_message, message])
     return report_message
 
