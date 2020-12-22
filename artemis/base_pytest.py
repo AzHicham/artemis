@@ -571,16 +571,16 @@ class ArtemisTestFixture(CommonTestFixture):
             with open(output_reference_filepath, "w") as reference_text:
                 reference_text.write(raw_reference)
 
-            # if six.PY3:
-            #     from artemis import pytest_report_makers
+            if six.PY3:
+                from artemis import pytest_report_makers
 
-            #     report_message = pytest_report_makers.response_diff(
-            #         filtered_reference, filtered_response
-            #     )
+                report_message = pytest_report_makers.response_diff(
+                    filtered_reference, filtered_response
+                )
 
-            #     pytest_report_makers.add_to_report(
-            #         self.get_test_name(), http_query, report_message
-            #     )
+                pytest_report_makers.add_to_report(
+                    self.get_test_name(), http_query, report_message
+                )
 
             # Print difference in console
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
