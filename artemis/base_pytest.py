@@ -135,6 +135,11 @@ class ArtemisTestFixture(CommonTestFixture):
 
         cov_status = _response.get("status", {}).get("status", "")
         if cov_status != "running":
+            logger.error(
+                "Coverage {} not running. Status from jormun is : \n {}".format(
+                    data_set, json.dumps(_response, indent=2)
+                )
+            )
             raise Exception("Coverage {} NOT RUNNING".format(data_set))
 
         params = _response.get("status", {}).get("parameters", "")
@@ -185,16 +190,18 @@ class ArtemisTestFixture(CommonTestFixture):
             r = requests.get(instance_jobs_url)
             r.raise_for_status()
             jobs_resp = json.loads(r.text)["jobs"]
+            a_job_exists = False
             for job in jobs_resp:
                 job_creation = datetime.datetime.strptime(
                     job["created_at"], "%Y-%m-%dT%H:%M:%S.%f"
                 )
                 if job_creation > time_limit:
+                    a_job_exists = True
                     if job["state"] == "done":
                         logger.info(
                             "Job done! : '{}' ".format(json.dumps(job, indent=2))
                         )
-                        continue
+
                     elif job["state"] == "running":
                         raise utils.RetryError(
                             "Job still in process ({state}). {job}".format(
@@ -207,6 +214,15 @@ class ArtemisTestFixture(CommonTestFixture):
                                 job=json.dumps(job, indent=2), state=job["state"]
                             )
                         )
+
+            if not a_job_exists:
+                raise utils.RetryError(
+                    "No tyr job launched after {} found in {}".format(
+                        time_limit, instance_jobs_url
+                    )
+                )
+            # if a_job_exists and we exited the loop above, then it means that all
+            # found jobs are marked as "done".
             return
 
         @retry(
@@ -303,7 +319,6 @@ class ArtemisTestFixture(CommonTestFixture):
                 dataset_types_to_process.append(dataset_type)
 
         wait_until_instance_jobs_are_done(current_utc_datetime)
-
         # Wait until data is reloaded
         logger.info("Wait for Kraken to reload : {}".format(data_set.name))
         wait_for_kraken_reload(last_reload_time, data_set.name)
