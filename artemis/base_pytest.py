@@ -198,14 +198,17 @@ class ArtemisTestFixture(CommonTestFixture):
                 if job_creation > time_limit:
                     a_job_exists = True
                     if job["state"] == "done":
-                        logger.info(
-                            "Job done! : '{}' ".format(json.dumps(job, indent=2))
+                        logger.debug(
+                            "Job done! : '{}' ".format(
+                                json.dumps(job["data_sets"], indent=2)
+                            )
                         )
 
                     elif job["state"] == "running":
                         raise utils.RetryError(
                             "Job still in process ({state}). {job}".format(
-                                job=json.dumps(job, indent=2), state=job["state"]
+                                job=json.dumps(job["data_sets"], indent=2),
+                                state=job["state"],
                             )
                         )
                     else:
