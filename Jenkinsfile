@@ -87,19 +87,18 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
-        }
-        failure {
             dir("./artemis/") {
-                sh 'make logs TAG=local'
+                sh 'make logs TAG=local > logs || exit 0'
             }
+            archiveArtifacts artifacts: 'artemis/logs', allowEmptyArchive :true
         }
         success { echo 'Job is successful, HO YEAH !' }
         cleanup {
             dir("./artemis/") {
             // shutdown dockers
-                sh 'make stop TAG=local'
+                sh 'make stop TAG=local || exit 0'
                 // remove images
-                sh 'make clean_images TAG=local'
+                sh 'make clean_images TAG=local || exit 0'
                 // remove files on disk
             }
             cleanWs()
