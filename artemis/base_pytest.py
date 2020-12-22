@@ -176,10 +176,9 @@ class ArtemisTestFixture(CommonTestFixture):
             wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
             retry_on_exception=utils.is_retry_exception,
         )
-        def wait_for_data_processing(data_type, time_limit):
+        def wait_until_instance_jobs_are_done(time_limit):
             """
-            Wait until the data passed to Tyr is processed by checking the associated dataset state in the job
-            :param data_type: Type of data passed to Tyr
+            Wait until all Tyr's jobs related to the instance and created after `time_limit` are marked "done"
             :param time_limit: UTC time from when the job could have been created. Allows to exclude jobs from previous bina
             :return: When dataset is "done"
             """
@@ -191,26 +190,24 @@ class ArtemisTestFixture(CommonTestFixture):
                     job["created_at"], "%Y-%m-%dT%H:%M:%S.%f"
                 )
                 if job_creation > time_limit:
-                    for dataset in job["data_sets"]:
-                        if data_type == dataset["type"]:
-                            if dataset["state"] == "done":
-                                logger.info("Dataset '{}' done!".format(data_type))
-                                return
-                            elif dataset["state"] != "failed":
-                                raise utils.RetryError(
-                                    "Job with dataset '{type}' still in process ({state})".format(
-                                        type=data_type, state=job["state"]
-                                    )
-                                )
-                            else:
-                                raise Exception(
-                                    "Dataset '{type}' in state '{state}'".format(
-                                        type=data_type, state=job["state"]
-                                    )
-                                )
-            raise utils.RetryError(
-                "Job with dataset '{}' not yet created ".format(data_type)
-            )
+                    if job["state"] == "done":
+                        logger.info(
+                            "Job done! : '{}' ".format(json.dumps(job, indent=2))
+                        )
+                        continue
+                    elif job["state"] == "running":
+                        raise utils.RetryError(
+                            "Job still in process ({state}). {job}".format(
+                                job=json.dumps(job, indent=2), state=job["state"]
+                            )
+                        )
+                    else:
+                        raise Exception(
+                            "Job in state '{state}'. {job}".format(
+                                job=json.dumps(job, indent=2), state=job["state"]
+                            )
+                        )
+            return
 
         @retry(
             stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
@@ -305,9 +302,7 @@ class ArtemisTestFixture(CommonTestFixture):
                 put_data(data_type, file_ext)
                 dataset_types_to_process.append(dataset_type)
 
-        for dataset_type in dataset_types_to_process:
-            logger.info("Wait for dataset {}".format(dataset_type))
-            wait_for_data_processing(dataset_type, current_utc_datetime)
+        wait_until_instance_jobs_are_done(current_utc_datetime)
 
         # Wait until data is reloaded
         logger.info("Wait for Kraken to reload : {}".format(data_set.name))
