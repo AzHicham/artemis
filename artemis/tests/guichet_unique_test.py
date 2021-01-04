@@ -1,6 +1,5 @@
 from artemis.common_fixture import clean_kirin_db, dataset, DataSet, set_scenario
 from artemis.tests.fixture import ArtemisTestFixture
-import datetime
 import pytest
 
 xfail = pytest.mark.xfail
@@ -8,15 +7,7 @@ COVERAGE = "guichet-unique"
 
 
 @pytest.mark.GuichetUnique
-@dataset(
-    [
-        DataSet(
-            COVERAGE,
-            reload_timeout=datetime.timedelta(minutes=9),
-            fixed_wait=datetime.timedelta(seconds=5),
-        )
-    ]
-)
+@dataset([DataSet(COVERAGE)])
 class GuichetUnique(object):
     """
     """

@@ -574,7 +574,7 @@ class ArtemisTestFixture(CommonTestFixture):
                 os.makedirs(output_dir_path)
 
             # write response file
-            response_filename = "{}_resp.json".format(filename_prefix)
+            response_filename = "{}.json".format(filename_prefix)
             response_filepath = os.path.join(output_dir_path, response_filename)
             self.write_full_response_to_file(
                 http_query, response_string, response_filepath, response_checker
