@@ -41,6 +41,28 @@ def print_color(line, color=Colors.DEFAULT):
     sys.stdout.write("{}{}{}".format(color.value, line, Colors.DEFAULT.value))
 
 
+def get_last_coverage_loaded_time(cov):
+    _response, _, _ = utils.request("coverage/{cov}/status".format(cov=cov))
+    return _response.get("status", {}).get("last_load_at", "")
+
+
+def wait_for_kraken_reload(data_set, last_reload_time):
+    @retry(
+        stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
+        wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
+        retry_on_exception=utils.is_retry_exception,
+    )
+    def _wait_for_kraken_reload(last_data_loaded, cov):
+        new_data_loaded = get_last_coverage_loaded_time(cov)
+
+        if last_data_loaded == new_data_loaded:
+            raise utils.RetryError("kraken data is not loaded")
+
+        logger.info("Kraken reloaded")
+
+    _wait_for_kraken_reload(last_reload_time, data_set.name)
+
+
 class ArtemisTestFixture(CommonTestFixture):
 
     dataset_binarized = []  # type: List[str]
@@ -172,10 +194,6 @@ class ArtemisTestFixture(CommonTestFixture):
             base_url=config["URL_TYR"], instance=data_set
         )
 
-        def get_last_coverage_loaded_time(cov):
-            _response, _, _ = utils.request("coverage/{cov}/status".format(cov=cov))
-            return _response.get("status", {}).get("last_load_at", "")
-
         @retry(
             stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
             wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
@@ -227,19 +245,6 @@ class ArtemisTestFixture(CommonTestFixture):
             # if a_job_exists and we exited the loop above, then it means that all
             # found jobs are marked as "done".
             return
-
-        @retry(
-            stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
-            wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
-            retry_on_exception=utils.is_retry_exception,
-        )
-        def wait_for_kraken_reload(last_data_loaded, cov):
-            new_data_loaded = get_last_coverage_loaded_time(cov)
-
-            if last_data_loaded == new_data_loaded:
-                raise utils.RetryError("kraken data is not loaded")
-
-            logger.info("Kraken reloaded")
 
         data_path = config["DATA_DIR"]
         input_path = "{}/{}".format(config["CONTAINER_DATA_INPUT_PATH"], data_set.name)
@@ -324,7 +329,7 @@ class ArtemisTestFixture(CommonTestFixture):
         wait_until_instance_jobs_are_done(current_utc_datetime)
         # Wait until data is reloaded
         logger.info("Wait for Kraken to reload : {}".format(data_set.name))
-        wait_for_kraken_reload(last_reload_time, data_set.name)
+        wait_for_kraken_reload(data_set, last_reload_time)
 
     @classmethod
     def kill_the_krakens(cls):
@@ -339,8 +344,16 @@ class ArtemisTestFixture(CommonTestFixture):
                 logger.error(
                     "No Docker Container found for Kraken {}".format(data_set.name)
                 )
+                raise Exception(
+                    "No Docker Container found for Kraken {}".format(data_set.name)
+                )
             else:
+
+                last_data_loaded = get_last_coverage_loaded_time(cov=data_set.name)
+
                 containers[0].restart()
+
+                wait_for_kraken_reload(data_set, last_data_loaded)
 
     @classmethod
     def pop_krakens(cls):
