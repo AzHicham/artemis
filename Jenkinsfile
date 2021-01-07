@@ -10,9 +10,20 @@ pipeline {
         string(name: 'navitia_docker_compose_repo', defaultValue: 'CanalTP/navitia-docker-compose', description: 'Navitia_docker_compose github repository')
         string(name: 'navitia_docker_compose_branch', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
         choice(
+            name: 'event',
+            choices: ['push', 'pull_request'],
+            description: 'Which branch of navitia to use for artemis tests. '
+        )
+        string(
             name: 'navitia_branch',
-            choices: ['dev', 'release'],
-            description: 'Which branch of navitia to use for artemis tests'
+            description: """Which branch of navitia to use for artemis tests. \
+                            If `event=push` navitia_branch can be `dev` or `release`. \
+                            If `event=pull_request` navitia_branch is the name of the branch used for the pull request."""
+        )
+        string(
+            name: 'navitia_fork',
+            defaultValue: 'CanalTP',
+            description: 'Which fork of navitia to use. Only used when `event=pull_request` '
         )
     }
     stages {
@@ -41,12 +52,14 @@ pipeline {
         stage('Build docker images') {
             environment {
                 BRANCH  = "${params.navitia_branch}"
+                EVENT   = "${params.event}"
+                FORK    = "${params.navitia_fork}"
             }
             steps {
 
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     dir("./artemis/navitia-docker-compose/builder_from_package/") {
-                        sh './build.sh -o $GITHUB_TOKEN -b $BRANCH -t local'
+                        sh './build.sh -o $GITHUB_TOKEN -t local -e $event -f $FORK -b $BRANCH'
                     }
                 }
             }
