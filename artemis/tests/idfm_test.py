@@ -1,6 +1,5 @@
 from artemis.common_fixture import dataset, DataSet, set_scenario
 from artemis.tests.fixture import ArtemisTestFixture
-import datetime
 from artemis.configuration_manager import config
 import pytest
 
@@ -30,15 +29,7 @@ IDFM_PARAMS.update(
 
 
 @pytest.mark.IdfM
-@dataset(
-    [
-        DataSet(
-            "idfm",
-            reload_timeout=datetime.timedelta(minutes=30),
-            fixed_wait=datetime.timedelta(seconds=20),
-        )
-    ]
-)
+@dataset([DataSet("idfm")])
 class IdfM(object):
     def test_idfm_0(self):
         """

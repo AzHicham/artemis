@@ -41,6 +41,28 @@ def print_color(line, color=Colors.DEFAULT):
     sys.stdout.write("{}{}{}".format(color.value, line, Colors.DEFAULT.value))
 
 
+def get_last_coverage_loaded_time(cov):
+    _response, _, _ = utils.request("coverage/{cov}/status".format(cov=cov))
+    return _response.get("status", {}).get("last_load_at", "")
+
+
+def wait_for_kraken_reload(data_set, last_reload_time):
+    @retry(
+        stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
+        wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
+        retry_on_exception=utils.is_retry_exception,
+    )
+    def _wait_for_kraken_reload(last_data_loaded, cov):
+        new_data_loaded = get_last_coverage_loaded_time(cov)
+
+        if last_data_loaded == new_data_loaded:
+            raise utils.RetryError("kraken data is not loaded")
+
+        logger.info("Kraken reloaded")
+
+    _wait_for_kraken_reload(last_reload_time, data_set.name)
+
+
 class ArtemisTestFixture(CommonTestFixture):
 
     dataset_binarized = []  # type: List[str]
@@ -63,7 +85,7 @@ class ArtemisTestFixture(CommonTestFixture):
         self.create_ref = request.config.getvalue("create_ref")
 
     @classmethod
-    @pytest.fixture(scope="class", autouse=True)
+    @pytest.fixture(scope="session", autouse=True)
     def manage_data(cls, request):
         skip_bina = request.config.getvalue("skip_bina")
         if skip_bina:
@@ -135,6 +157,11 @@ class ArtemisTestFixture(CommonTestFixture):
 
         cov_status = _response.get("status", {}).get("status", "")
         if cov_status != "running":
+            logger.error(
+                "Coverage {} not running. Status from jormun is : \n {}".format(
+                    data_set, json.dumps(_response, indent=2)
+                )
+            )
             raise Exception("Coverage {} NOT RUNNING".format(data_set))
 
         params = _response.get("status", {}).get("parameters", "")
@@ -167,63 +194,57 @@ class ArtemisTestFixture(CommonTestFixture):
             base_url=config["URL_TYR"], instance=data_set
         )
 
-        def get_last_coverage_loaded_time(cov):
-            _response, _, _ = utils.request("coverage/{cov}/status".format(cov=cov))
-            return _response.get("status", {}).get("last_load_at", "")
-
         @retry(
             stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
             wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
             retry_on_exception=utils.is_retry_exception,
         )
-        def wait_for_data_processing(data_type, time_limit):
+        def wait_until_instance_jobs_are_done(time_limit):
             """
-            Wait until the data passed to Tyr is processed by checking the associated dataset state in the job
-            :param data_type: Type of data passed to Tyr
+            Wait until all Tyr's jobs related to the instance and created after `time_limit` are marked "done"
             :param time_limit: UTC time from when the job could have been created. Allows to exclude jobs from previous bina
             :return: When dataset is "done"
             """
             r = requests.get(instance_jobs_url)
             r.raise_for_status()
             jobs_resp = json.loads(r.text)["jobs"]
+            a_job_exists = False
             for job in jobs_resp:
                 job_creation = datetime.datetime.strptime(
                     job["created_at"], "%Y-%m-%dT%H:%M:%S.%f"
                 )
                 if job_creation > time_limit:
-                    for dataset in job["data_sets"]:
-                        if data_type == dataset["type"]:
-                            if dataset["state"] == "done":
-                                logger.info("Dataset '{}' done!".format(data_type))
-                                return
-                            elif dataset["state"] != "failed":
-                                raise utils.RetryError(
-                                    "Job with dataset '{type}' still in process ({state})".format(
-                                        type=data_type, state=job["state"]
-                                    )
-                                )
-                            else:
-                                raise Exception(
-                                    "Dataset '{type}' in state '{state}'".format(
-                                        type=data_type, state=job["state"]
-                                    )
-                                )
-            raise utils.RetryError(
-                "Job with dataset '{}' not yet created ".format(data_type)
-            )
+                    a_job_exists = True
+                    if job["state"] == "done":
+                        logger.debug(
+                            "Job done! : '{}' ".format(
+                                json.dumps(job["data_sets"], indent=2)
+                            )
+                        )
 
-        @retry(
-            stop_max_delay=data_set.reload_timeout.total_seconds() * 1000,
-            wait_fixed=data_set.fixed_wait.total_seconds() * 1000,
-            retry_on_exception=utils.is_retry_exception,
-        )
-        def wait_for_kraken_reload(last_data_loaded, cov):
-            new_data_loaded = get_last_coverage_loaded_time(cov)
+                    elif job["state"] == "running":
+                        raise utils.RetryError(
+                            "Job still in process ({state}). {job}".format(
+                                job=json.dumps(job["data_sets"], indent=2),
+                                state=job["state"],
+                            )
+                        )
+                    else:
+                        raise Exception(
+                            "Job in state '{state}'. {job}".format(
+                                job=json.dumps(job, indent=2), state=job["state"]
+                            )
+                        )
 
-            if last_data_loaded == new_data_loaded:
-                raise utils.RetryError("kraken data is not loaded")
-
-            logger.info("Kraken reloaded")
+            if not a_job_exists:
+                raise utils.RetryError(
+                    "No tyr job launched after {} found in {}".format(
+                        time_limit, instance_jobs_url
+                    )
+                )
+            # if a_job_exists and we exited the loop above, then it means that all
+            # found jobs are marked as "done".
+            return
 
         data_path = config["DATA_DIR"]
         input_path = "{}/{}".format(config["CONTAINER_DATA_INPUT_PATH"], data_set.name)
@@ -305,13 +326,10 @@ class ArtemisTestFixture(CommonTestFixture):
                 put_data(data_type, file_ext)
                 dataset_types_to_process.append(dataset_type)
 
-        for dataset_type in dataset_types_to_process:
-            logger.info("Wait for dataset {}".format(dataset_type))
-            wait_for_data_processing(dataset_type, current_utc_datetime)
-
+        wait_until_instance_jobs_are_done(current_utc_datetime)
         # Wait until data is reloaded
         logger.info("Wait for Kraken to reload : {}".format(data_set.name))
-        wait_for_kraken_reload(last_reload_time, data_set.name)
+        wait_for_kraken_reload(data_set, last_reload_time)
 
     @classmethod
     def kill_the_krakens(cls):
@@ -326,8 +344,16 @@ class ArtemisTestFixture(CommonTestFixture):
                 logger.error(
                     "No Docker Container found for Kraken {}".format(data_set.name)
                 )
+                raise Exception(
+                    "No Docker Container found for Kraken {}".format(data_set.name)
+                )
             else:
+
+                last_data_loaded = get_last_coverage_loaded_time(cov=data_set.name)
+
                 containers[0].restart()
+
+                wait_for_kraken_reload(data_set, last_data_loaded)
 
     @classmethod
     def pop_krakens(cls):
@@ -561,7 +587,7 @@ class ArtemisTestFixture(CommonTestFixture):
                 os.makedirs(output_dir_path)
 
             # write response file
-            response_filename = "{}_resp.json".format(filename_prefix)
+            response_filename = "{}.json".format(filename_prefix)
             response_filepath = os.path.join(output_dir_path, response_filename)
             self.write_full_response_to_file(
                 http_query, response_string, response_filepath, response_checker
@@ -576,16 +602,16 @@ class ArtemisTestFixture(CommonTestFixture):
             with open(output_reference_filepath, "w") as reference_text:
                 reference_text.write(raw_reference)
 
-            # if six.PY3:
-            #     from artemis import pytest_report_makers
+            if six.PY3:
+                from artemis import pytest_report_makers
 
-            #     report_message = pytest_report_makers.response_diff(
-            #         filtered_reference, filtered_response
-            #     )
+                report_message = pytest_report_makers.response_diff(
+                    filtered_reference, filtered_response
+                )
 
-            #     pytest_report_makers.add_to_report(
-            #         self.get_test_name(), http_query, report_message
-            #     )
+                pytest_report_makers.add_to_report(
+                    self.get_test_name(), http_query, report_message
+                )
 
             # Print difference in console
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())

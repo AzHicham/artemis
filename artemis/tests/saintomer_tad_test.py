@@ -1,11 +1,10 @@
 from artemis.common_fixture import dataset, DataSet, set_scenario
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
-import datetime
 
 
 @pytest.mark.SaintOmer
-@dataset([DataSet("saintomer", reload_timeout=datetime.timedelta(minutes=3))])
+@dataset([DataSet("saintomer")])
 class SaintOmer(object):
     """
       test "on demand transport"
