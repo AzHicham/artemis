@@ -59,7 +59,7 @@ pipeline {
 
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     dir("./artemis/navitia-docker-compose/builder_from_package/") {
-                        sh './build.sh -o $GITHUB_TOKEN -t local -e $event -f $FORK -b $BRANCH'
+                        sh './build.sh -o $GITHUB_TOKEN -t local -e $EVENT -f $FORK -b $BRANCH'
                     }
                 }
             }
