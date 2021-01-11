@@ -12,10 +12,11 @@ pipeline {
         choice(
             name: 'event',
             choices: ['push', 'pull_request'],
-            description: 'Which branch of navitia to use for artemis tests. '
+            description: 'Which kind of event triggered the github workflow. '
         )
         string(
             name: 'navitia_branch',
+            defaultValue: 'dev',
             description: """Which branch of navitia to use for artemis tests. \
                             If `event=push` navitia_branch can be `dev` or `release`. \
                             If `event=pull_request` navitia_branch is the name of the branch used for the pull request."""
