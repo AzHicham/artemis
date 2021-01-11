@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'artemis_repo', defaultValue: 'CanalTP/artemis', description: 'Artemis gihub repository')
+        string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
+        string(name: 'docker_kirin_repo', defaultValue: 'CanalTP/docker_kirin', description: 'Artemis_data github repository ')
+        string(name: 'docker_kirin_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
+    }
+    stages {
+        stage('Pull data') {
+            steps {
+                withCredentials(
+                [sshUserPrivateKey(
+                    credentialsId: 'jenkins-core-ssh',
+                    keyFileVariable: 'SSH_KEY_FILE',
+                    passphraseVariable: '',
+                    usernameVariable: 'jenkins-kisio-core')])
+                {
+                    sshagent(credentials : ['jenkins-core-ssh']) {
+                        sh """
+                        ssh -tt root@par-vm14.srv.canaltp.fr << EOF
+                        eval `ssh-agent`
+                        ssh-add $SSH_KEY_FILE
+                        rm -rf ./artemis
+                        git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
+                        git clone git@github.com:${params.docker_kirin_repo}.git --branch ${params.docker_kirin_branch} ./artemis/docker_kirin
+                        cd ./artemis
+                        git submodule update --init
+                        make pull
+                        EOF
+                        """
+                    }
+                }
+            }
+        }
+
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
+            junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
+            archiveArtifacts artifacts: 'artemis/logs', allowEmptyArchive :true
+        }
+        success { echo 'Job is successful, HO YEAH !' }
+        cleanup {
+            cleanWs()
+        }
+    }
+}
