@@ -12,7 +12,7 @@ pipeline {
         choice(
             name: 'event',
             choices: ['push', 'pull_request'],
-            description: 'Which branch of navitia to use for artemis tests. '
+            description: 'Which kind of event triggered the github workflow. '
         )
         string(
             name: 'navitia_branch',
