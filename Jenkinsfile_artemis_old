@@ -3,33 +3,46 @@ pipeline {
     parameters {
         string(name: 'artemis_repo', defaultValue: 'CanalTP/artemis', description: 'Artemis gihub repository')
         string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
+        string(name: 'artemis_ref_repo', defaultValue: 'CanalTP/artemis_references', description: 'Artemis gihub repository')
+        string(name: 'artemis_ref_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
         string(name: 'docker_kirin_repo', defaultValue: 'CanalTP/docker_kirin', description: 'Artemis_data github repository ')
         string(name: 'docker_kirin_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
+        string(name: 'pytest_args', defaultValue: 'not TestIdfM', description: """Expression that matchs test names to be run. This is passed to 'pytest -k <pytest_args>'
+
+cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-tests-based-on-their-name """)
     }
     stages {
         stage('Pull data') {
             steps {
-                withCredentials(
-                [sshUserPrivateKey(
-                    credentialsId: 'jenkins-core-ssh',
-                    keyFileVariable: 'SSH_KEY_FILE',
-                    passphraseVariable: '',
-                    usernameVariable: 'jenkins-kisio-core')])
-                {
-                    sshagent(credentials : ['jenkins-core-ssh']) {
-                        sh """
-                        ssh -tt root@par-vm14.srv.canaltp.fr << EOF
-                        eval `ssh-agent`
-                        ssh-add $SSH_KEY_FILE
-                        rm -rf ./artemis
-                        git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
-                        git clone git@github.com:${params.docker_kirin_repo}.git --branch ${params.docker_kirin_branch} ./artemis/docker_kirin
-                        cd ./artemis
-                        git submodule update --init
-                        make pull
-                        EOF
-                        """
+                sshagent(credentials : ['jenkins-core-ssh']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr " \
+                    rm -rf ./artemis \
+                    && hostname \
+                    && ls \
+                    && git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis \
+                    && ls \
+                    && git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/reference \
+                    && git clone git@github.com:${params.docker_kirin_repo}.git --branch ${params.docker_kirin_branch} ./artemis/docker_kirin \
+                    "
+                    """
                     }
+            }
+        }
+        stage('Launch artemis') {
+            steps {
+                sshagent(credentials : ['jenkins-core-ssh']) {
+                    sh '''ssh -tt -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr "cd artemis  && python -m py.test -s artemis/tests -k '$pytest_args' --junitxml=artemis.xml -s -vv -l --tb=long" '''
+                }
+            }
+        }
+        stage('Recover artifacts') {
+            steps {
+                sshagent(credentials : ['jenkins-core-ssh']) {
+                    sh 'rm -rf artemis'
+                    sh 'mkdir -p artemis/output '
+                    sh '''scp -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/output/* artemis/output/  '''
+                    sh '''scp -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/*.xml artemis/  '''
                 }
             }
         }
@@ -38,7 +51,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
-            junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
+            junit testResults: 'artemis/*.xml', allowEmptyResults: true
             archiveArtifacts artifacts: 'artemis/logs', allowEmptyArchive :true
         }
         success { echo 'Job is successful, HO YEAH !' }
