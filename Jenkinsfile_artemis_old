@@ -7,7 +7,7 @@ pipeline {
         string(name: 'artemis_ref_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
         string(name: 'docker_kirin_repo', defaultValue: 'CanalTP/docker_kirin', description: 'Artemis_data github repository ')
         string(name: 'docker_kirin_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
-        string(name: 'pytest_args', defaultValue: 'auvergne', description: """Expression that matchs test names to be run. This is passed to 'pytest -k <pytest_args>'
+        string(name: 'pytest_args', defaultValue: '', description: """Expression that matchs test names to be run. This is passed to 'pytest -k <pytest_args>'
 
 cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-tests-based-on-their-name """)
     }
