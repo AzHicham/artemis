@@ -7,7 +7,7 @@ pipeline {
         string(name: 'artemis_ref_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
         string(name: 'docker_kirin_repo', defaultValue: 'CanalTP/docker_kirin', description: 'Artemis_data github repository ')
         string(name: 'docker_kirin_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
-        string(name: 'pytest_args', defaultValue: 'not TestIdfM', description: """Expression that matchs test names to be run. This is passed to 'pytest -k <pytest_args>'
+        string(name: 'pytest_args', defaultValue: 'auvergne', description: """Expression that matchs test names to be run. This is passed to 'pytest -k <pytest_args>'
 
 cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-tests-based-on-their-name """)
     }
@@ -50,6 +50,12 @@ cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-
     }
     post {
         always {
+            sshagent(credentials : ['jenkins-core-ssh']) {
+                    sh 'rm -rf artemis'
+                    sh 'mkdir -p artemis/output '
+                    sh '''scp -r -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/output/ artemis/output/  '''
+                    sh '''scp -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/*.xml artemis/  '''
+            }
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/*.xml', allowEmptyResults: true
             archiveArtifacts artifacts: 'artemis/logs', allowEmptyArchive :true
