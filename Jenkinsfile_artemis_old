@@ -11,6 +11,13 @@ pipeline {
 
 cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-tests-based-on-their-name """)
     }
+    options {
+      throttleJobProperty(
+          categories: ['artemis'],
+          throttleEnabled: true,
+          throttleOption: 'category'
+      )
+    }
     stages {
         stage('Pull data') {
             steps {
