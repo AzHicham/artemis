@@ -20,7 +20,6 @@ cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-
                     rm -rf ./artemis \
                     && git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis \
                     && git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/reference \
-                    && git clone git@github.com:${params.docker_kirin_repo}.git --branch ${params.docker_kirin_branch} ./artemis/docker_kirin \
                     "
                     """
                     }
