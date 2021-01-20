@@ -6,16 +6,20 @@ aka ArtemisNG has been designed to run tests using docker-compose, in order to b
 
 ### 1. Run Navitia services in docker containers
 
-*   You can clone the repository navitia-docker-compose, available [here](https://github.com/CanalTP/navitia-docker-compose) and follow the instructions in the [readme](https://github.com/CanalTP/navitia-docker-compose/blob/master/README.md) file to have the whole Navitia environment running.
+*   If you want to run the current release version of Navitia, you can clone the repository navitia-docker-compose, available [here](https://github.com/CanalTP/navitia-docker-compose) and follow the instructions in the [readme](https://github.com/CanalTP/navitia-docker-compose/blob/master/README.md) file to have the whole Navitia environment running. Images of Navitia's components in current release version will be pulled from Dockerhub and stored locally, be aware that previously pulled images must be remove from your machine if you're about to run the latest release version.
+
     - Basic usage: launch this command at the root directory of the repo 'navitia-docker-compose':\
-    `docker-compose -f docker-compose.yml -f artemis/docker-artemis-instance.yml up`
+    `COMPOSE_PROJECT_NAME=artemis TAG=latest KIRIN_TAG=latest docker-compose  -f docker-compose.yml -f artemis/docker-artemis-instance.yml up`
 
         *Note: the file in the command above [docker-artemis-instance.yml](https://github.com/CanalTP/navitia-docker-compose/blob/master/artemis/docker-artemis-instance.yml) references every coverages available for Artemis. Therefore, a docker container will be started for each of these coverages. You can edit this file to start only the coverage(s) needed.*
     - To run real-time tests, Kirin is needed. Please refer to these
     [instructions](https://github.com/CanalTP/navitia-docker-compose/blob/master/kirin/README.md) to have it in the docker-compose. In this case, the command is:\
-    `docker-compose -f docker-compose.yml -f artemis/docker-artemis-instance.yml -f kirin/docker-compose_kirin.yml up`
+    `COMPOSE_PROJECT_NAME=artemis TAG=latest  KIRIN_TAG=latest docker-compose  -f docker-compose.yml -f artemis/docker-artemis-instance.yml -f kirin/docker-compose_kirin.yml up`
 
     - To stop the running containers and remove them along with the associated networks and volumes, use the same command to start the containers and replace `up` with `down -v`
+
+*   You can also launch Navitia of a version of your own choice by building the docker images calling [this scipt](https://github.com/CanalTP/navitia-docker-compose/blob/master/builder_from_package/build.sh). Before using this script, you should be sure that you have the right to read some of our private repositories and make sure you've got a personal github token to be used along with the script. If it's not the case, you may have to create a new personal github token [here](https://github.com/settings/tokens/). When you have gathered all necessary info, you can launch the script and the ensuing steps are pretty much the same as described above except for the `tag`. 
+
 ### 2. Run tests with Artemis NG
 
 Once all containers are running, it's time to run the tests.
