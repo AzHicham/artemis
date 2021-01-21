@@ -6,6 +6,8 @@ aka ArtemisNG has been designed to run tests using docker-compose, in order to b
 
 ### 1. Run Navitia services in docker containers
 
+*   The easiest way to launch Navitia is to use the `Makefile` [here](https://github.com/CanalTP/artemis/blob/master/Makefile), just do `make start TAG=latest`.
+
 *   If you want to run the current release version of Navitia, you can clone the repository navitia-docker-compose, available [here](https://github.com/CanalTP/navitia-docker-compose) and follow the instructions in the [readme](https://github.com/CanalTP/navitia-docker-compose/blob/master/README.md) file to have the whole Navitia environment running. Images of Navitia's components in current release version will be pulled from Dockerhub and stored locally, be aware that previously pulled images must be remove from your machine if you're about to run the latest release version.
 
     - Basic usage: launch this command at the root directory of the repo 'navitia-docker-compose':\
@@ -18,7 +20,9 @@ aka ArtemisNG has been designed to run tests using docker-compose, in order to b
 
     - To stop the running containers and remove them along with the associated networks and volumes, use the same command to start the containers and replace `up` with `down -v`
 
-*   You can also launch Navitia of a version of your own choice by building the docker images calling [this scipt](https://github.com/CanalTP/navitia-docker-compose/blob/master/builder_from_package/build.sh). Before using this script, you should be sure that you have the right to read some of our private repositories and make sure you've got a personal github token to be used along with the script. If it's not the case, you may have to create a new personal github token [here](https://github.com/settings/tokens/). When you have gathered all necessary info, you can launch the script and the ensuing steps are pretty much the same as described above except for the `tag`. 
+*   You can also launch Navitia of a version of your own choice by building the docker images calling [this scipt](https://github.com/CanalTP/navitia-docker-compose/blob/master/builder_from_package/build.sh). Before using this script, you should be sure that you have the right to read some of our private repositories and make sure you've got a personal github token to be used along with the script. If it's not the case, you may have to create a new personal github token [here](https://github.com/settings/tokens/). When you have gathered all necessary info, you can launch the script and the ensuing steps are pretty much the same as described above except for the `tag`. (Ex. `make start TAG=local`) 
+
+
 
 ### 2. Run tests with Artemis NG
 
