@@ -107,6 +107,13 @@ pipeline {
             archiveArtifacts artifacts: 'artemis/logs', allowEmptyArchive :true
         }
         success { echo 'Job is successful, HO YEAH !' }
+        failure {
+            withCredentials([string(credentialsId: 'navitia_core_team_slack_chan', variable: 'NAVITIA_CORE_TEAM_SLACK_CHAN')]) {
+                sh '''
+                    curl -X POST -H 'Content-type: application/json' --data '{"text":":warning: Artemis failed. See https://jenkins-core.canaltp.fr/job/artemis_old/"}' $NAVITIA_CORE_TEAM_SLACK_CHAN
+                '''
+            }
+        }
         cleanup {
             dir("./artemis/") {
             // shutdown dockers
