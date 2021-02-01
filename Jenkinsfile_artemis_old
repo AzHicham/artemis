@@ -45,7 +45,8 @@ cf. http://doc.pytest.org/en/latest/example/markers.html#using-k-expr-to-select-
             sshagent(credentials : ['jenkins-core-ssh']) {
                     sh 'rm -rf artemis'
                     sh 'mkdir -p artemis/output '
-                    sh '''scp -r -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/output/ artemis/output/  '''
+                    sh '''ssh -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr zip -rqo artemis/output/results.zip artemis/output/*'''
+                    sh '''scp -r -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/output/results.zip artemis/output/  '''
                     sh '''scp -o StrictHostKeyChecking=no root@par-vm14.srv.canaltp.fr:artemis/*.xml artemis/  '''
             }
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
