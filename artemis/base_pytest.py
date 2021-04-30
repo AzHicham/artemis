@@ -205,6 +205,7 @@ class ArtemisTestFixture(CommonTestFixture):
             :param time_limit: UTC time from when the job could have been created. Allows to exclude jobs from previous bina
             :return: When dataset is "done"
             """
+            # TODO : fetch only jobs in current dataset ex : http://localhost:9898/v0/jobs/test-01
             r = requests.get(instance_jobs_url)
             r.raise_for_status()
             jobs_resp = json.loads(r.text)["jobs"]
@@ -222,7 +223,7 @@ class ArtemisTestFixture(CommonTestFixture):
                             )
                         )
 
-                    elif job["state"] == "running":
+                    elif job["state"] in ["running", "pending"]:
                         raise utils.RetryError(
                             "Job still in process ({state}). {job}".format(
                                 job=json.dumps(job["data_sets"], indent=2),
