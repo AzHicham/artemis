@@ -27,6 +27,9 @@ pipeline {
             description: 'Which fork of navitia to use. Only used when `event=pull_request` '
         )
     }
+	options {
+        ansiColor('xterm')
+    }
     stages {
         stage('Pull data') {
             steps {
