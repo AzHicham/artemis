@@ -205,7 +205,6 @@ class ArtemisTestFixture(CommonTestFixture):
             :param time_limit: UTC time from when the job could have been created. Allows to exclude jobs from previous bina
             :return: When dataset is "done"
             """
-            # TODO : fetch only jobs in current dataset ex : http://localhost:9898/v0/jobs/test-01
             r = requests.get(instance_jobs_url)
             r.raise_for_status()
             jobs_resp = json.loads(r.text)["jobs"]
@@ -310,6 +309,42 @@ class ArtemisTestFixture(CommonTestFixture):
             logger.debug("Tyr response : {}".format(r.text))
             return True
 
+        def pause_tyr_beat():
+            """
+            Pause tyr_beat executable which lives in tyr_beat container.
+            Pauses all processes within tyr_beat container.
+            """
+            logger.debug("Stopping tyr_beat")
+            containers = [
+                x
+                for x in docker.DockerClient(version="auto").containers.list()
+                if "tyr_beat" in x.name
+            ]
+            if not containers:
+                logger.error("No Docker Container found for tyr_beat")
+                raise Exception("No Docker Container found for tyr_beat")
+            else:
+                for cn in containers:
+                    cn.pause()
+
+        def unpause_tyr_beat():
+            """
+            Unpause tyr_beat executable which lives in tyr_beat container.
+            Unpauses all processes within tyr_beat container.
+            """
+            logger.debug("Starting tyr_beat")
+            containers = [
+                x
+                for x in docker.DockerClient(version="auto").containers.list()
+                if "tyr_beat" in x.name
+            ]
+            if not containers:
+                logger.error("No Docker Container found for tyr_beat")
+                raise Exception("No Docker Container found for tyr_beat")
+            else:
+                for cn in containers:
+                    cn.unpause()
+
         # Get current datetime to check jobs created from now
         current_utc_datetime = datetime.datetime.utcnow()
 
@@ -321,11 +356,19 @@ class ArtemisTestFixture(CommonTestFixture):
             (["geopal", "fusio-geopal"], "geopal", ".txt"),
         ]
 
+        # We must pause tyr_beat to avoid possibly
+        # multiple (partial) binarization and kraken reload
+        # And more importantly test will run with dataset fully binarized
+        # For more detail see ticket NAVP-1726
+        pause_tyr_beat()
+
         dataset_types_to_process = []
         for data_files_type, dataset_type, file_ext in data_to_process:
             for data_type in valid_data_type_path(data_files_type):
                 put_data(data_type, file_ext)
                 dataset_types_to_process.append(dataset_type)
+
+        unpause_tyr_beat()
 
         wait_until_instance_jobs_are_done(current_utc_datetime)
         # Wait until data is reloaded
