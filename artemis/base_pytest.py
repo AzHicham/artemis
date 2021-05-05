@@ -324,7 +324,8 @@ class ArtemisTestFixture(CommonTestFixture):
                 logger.error("No Docker Container found for tyr_beat")
                 raise Exception("No Docker Container found for tyr_beat")
             else:
-                containers[0].pause()
+                for cn in containers:
+                    cn.pause()
 
         def unpause_tyr_beat():
             """
@@ -341,7 +342,8 @@ class ArtemisTestFixture(CommonTestFixture):
                 logger.error("No Docker Container found for tyr_beat")
                 raise Exception("No Docker Container found for tyr_beat")
             else:
-                containers[0].unpause()
+                for cn in containers:
+                    cn.unpause()
 
         # Get current datetime to check jobs created from now
         current_utc_datetime = datetime.datetime.utcnow()
