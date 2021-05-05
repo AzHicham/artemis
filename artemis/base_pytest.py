@@ -321,12 +321,8 @@ class ArtemisTestFixture(CommonTestFixture):
                 if "tyr_beat" in x.name
             ]
             if not containers:
-                logger.error(
-                    "No Docker Container found for tyr_beat"
-                )
-                raise Exception(
-                    "No Docker Container found for tyr_beat"
-                )
+                logger.error("No Docker Container found for tyr_beat")
+                raise Exception("No Docker Container found for tyr_beat")
             else:
                 containers[0].pause()
 
@@ -342,12 +338,8 @@ class ArtemisTestFixture(CommonTestFixture):
                 if "tyr_beat" in x.name
             ]
             if not containers:
-                logger.error(
-                    "No Docker Container found for tyr_beat"
-                )
-                raise Exception(
-                    "No Docker Container found for tyr_beat"
-                )
+                logger.error("No Docker Container found for tyr_beat")
+                raise Exception("No Docker Container found for tyr_beat")
             else:
                 containers[0].unpause()
 
