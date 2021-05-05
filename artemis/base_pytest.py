@@ -365,6 +365,7 @@ class ArtemisTestFixture(CommonTestFixture):
         # We must pause tyr_beat to avoid possibly
         # multiple (partial) binarization and kraken reload
         # And more importantly test will run with dataset fully binarized
+        # For more detail see ticket NAVP-1726
         pause_tyr_beat()
 
         dataset_types_to_process = []
