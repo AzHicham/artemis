@@ -408,21 +408,6 @@ class ArtemisTestFixture(CommonTestFixture):
         """
         pass
 
-    def request_compare(self, http_query, checker):
-        self.nb_call_to_request_compare += 1
-
-        # Get the json answer of the request (it is just a string here)
-        http_response = requests.get(http_query)
-
-        response_string = http_response.text
-
-        if self.create_ref:
-            # Create the reference file
-            self.create_reference(http_query, response_string, checker)
-        else:
-            # Comparing my response and my reference
-            self.compare_with_ref(http_query, response_string, checker)
-
     def api(self, url, response_checker=default_checker.default_checker):
         """
         Call to an endpoint using a coverage
@@ -507,8 +492,8 @@ class ArtemisTestFixture(CommonTestFixture):
             coverage=str(self.data_sets[0]),
             query_parameters=query,
         )
-        # launching request dans comparing
-        self.request_compare(http_query, default_checker.default_journey_checker)
+        http_response = self.benchmark(requests.get, http_query)
+        self.compare(http_query, http_response, default_checker.default_journey_checker)
 
     def write_full_response_to_file(
         self,
@@ -664,3 +649,34 @@ class ArtemisTestFixture(CommonTestFixture):
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
 
             raise
+
+    def request_compare(self, http_query, checker):
+        self.nb_call_to_request_compare += 1
+
+        # Get the json answer of the request (it is just a string here)
+        http_response = requests.get(http_query)
+
+        response_string = http_response.text
+
+        if self.create_ref:
+            # Create the reference file
+            self.create_reference(http_query, response_string, checker)
+        else:
+            # Comparing my response and my reference
+            self.compare_with_ref(http_query, response_string, checker)
+
+
+    def compare(self, http_query, http_response, checker):
+        self.nb_call_to_request_compare += 1
+        response_string = http_response.text
+
+        if self.create_ref:
+            # Create the reference file
+            self.create_reference(http_query, response_string, checker)
+        else:
+            # Comparing my response and my reference
+            self.compare_with_ref(http_query, response_string, checker)
+
+    @pytest.fixture(scope="function", autouse=True)
+    def setup_benchmark(self, benchmark):
+        self.benchmark = benchmark

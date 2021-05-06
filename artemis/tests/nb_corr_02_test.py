@@ -17,12 +17,12 @@ class NbCorr02(object):
             datetime="20041213T0700",
         )
 
-
+@pytest.mark.benchmark(group='NbCorr02-new_default')
 @set_scenario({"nb-corr-02": {"scenario": "new_default"}})
 class TestNbCorr02NewDefault(NbCorr02, ArtemisTestFixture):
     pass
 
-
+@pytest.mark.benchmark(group='NbCorr02-experimental')
 @set_scenario({"nb-corr-02": {"scenario": "experimental"}})
 class TestNbCorr02Experimental(NbCorr02, ArtemisTestFixture):
     pass
