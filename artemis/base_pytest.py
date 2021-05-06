@@ -665,7 +665,6 @@ class ArtemisTestFixture(CommonTestFixture):
             # Comparing my response and my reference
             self.compare_with_ref(http_query, response_string, checker)
 
-
     def compare(self, http_query, http_response, checker):
         self.nb_call_to_request_compare += 1
         response_string = http_response.text
