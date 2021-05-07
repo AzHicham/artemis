@@ -427,7 +427,8 @@ class ArtemisTestFixture(CommonTestFixture):
         http_query = "{base_query}/v1{url}".format(
             base_query=config["URL_JORMUN"], url=url
         )
-        self.request_compare(http_query, response_checker)
+        http_response = self.benchmark(requests.get, http_query)
+        self.compare(http_query, http_response, response_checker)
 
     def journey(
         self,
@@ -649,21 +650,6 @@ class ArtemisTestFixture(CommonTestFixture):
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
 
             raise
-
-    def request_compare(self, http_query, checker):
-        self.nb_call_to_request_compare += 1
-
-        # Get the json answer of the request (it is just a string here)
-        http_response = requests.get(http_query)
-
-        response_string = http_response.text
-
-        if self.create_ref:
-            # Create the reference file
-            self.create_reference(http_query, response_string, checker)
-        else:
-            # Comparing my response and my reference
-            self.compare_with_ref(http_query, response_string, checker)
 
     def compare(self, http_query, http_response, checker):
         self.nb_call_to_request_compare += 1
