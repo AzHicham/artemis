@@ -12,6 +12,12 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
+    - name: Available space
+      run: df
+    - name: Make some space 
+      run: rm -rf /usr/share/dotnet
+    - name: Available space
+      run: df
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
