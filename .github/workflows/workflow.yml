@@ -11,19 +11,30 @@ on:
 
 
 jobs:
-  precommit:
+  checks:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v1
       with:
-        python-version: '3.6'
-        architecture: 'x64'
-    - name: install dependencies
-      run: |
-        pip install -r requirements.txt
-        pre-commit install
-    - name: run pre-commit
-      run: |
-        pre-commit run --all-files --show-diff-on-failure
+          submodules: 'recursive'
+    - uses: actions/setup-python@v2
+      with:
+          python-version: '3.x'
+    - name: Pull data
+      run: rm -rf navitia-docker-compose &
+    - name: Pull Navitia-docker-compose
+      env:
+        ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
+      run: git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/navitia-docker-compose.git --branch master ./navitia-docker-compose
+    - name: Build docker image
+      env:
+        ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
+      run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f AzHicham -b dev
+    - name: Install docker-compose
+      run: apt update && apt install -y docker docker-compose
+    - name: Pull remaining images
+      run: make pull_available TAG=local
+    - name: Start all dockers 
+      run: make start TAG=local
+    - name: Run Artemis Test
+      run: make test
