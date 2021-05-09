@@ -32,8 +32,6 @@ jobs:
       env:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
       run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f AzHicham -b dev
-    - name: Install docker-compose
-      run: apt update && apt install -y docker docker-compose
     - name: Pull remaining images
       run: make pull_available TAG=local
     - name: Start all dockers 
