@@ -9,7 +9,6 @@ on:
     types:
       - created
 
-
 jobs:
   checks:
     runs-on: ubuntu-latest
