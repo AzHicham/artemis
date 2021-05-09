@@ -13,17 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-          submodules: 'recursive'
     - uses: actions/setup-python@v2
       with:
           python-version: '3.x'
-    - name: Pull data
-      run: rm -rf navitia-docker-compose &
+    - name: Remove some folders
+      run: |
+        rm -rf navitia-docker-compose
+        rm -rf artemis_data
+        rm -rf artemis_references
     - name: Pull Navitia-docker-compose
       env:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
-      run: git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/navitia-docker-compose.git --branch master ./navitia-docker-compose
+      run: |
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/navitia-docker-compose.git --branch master ./navitia-docker-compose
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/artemis_data.git --branch master ./artemis_data
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/pbench/artemis_references.git --branch artemis_ng ./artemis_references
     - name: Build docker image
       env:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
