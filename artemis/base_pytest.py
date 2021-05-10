@@ -427,7 +427,7 @@ class ArtemisTestFixture(CommonTestFixture):
         http_query = "{base_query}/v1{url}".format(
             base_query=config["URL_JORMUN"], url=url
         )
-        http_response = self.benchmark(requests.get, http_query)
+        http_response = requests.get(http_query) #self.benchmark(requests.get, http_query)
         self.compare(http_query, http_response, response_checker)
 
     def journey(
@@ -493,7 +493,7 @@ class ArtemisTestFixture(CommonTestFixture):
             coverage=str(self.data_sets[0]),
             query_parameters=query,
         )
-        http_response = self.benchmark(requests.get, http_query)
+        http_response = requests.get(http_query)  # self.benchmark(requests.get, http_query)
         self.compare(http_query, http_response, default_checker.default_journey_checker)
 
     def write_full_response_to_file(

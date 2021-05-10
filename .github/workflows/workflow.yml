@@ -14,12 +14,10 @@ jobs:
     steps:
     - name: Make some space 
       run: rm -rf /usr/share/dotnet
-    - name: Update docker
-      run: sudo apt update && sudo apt upgrade -y docker docker-compose
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-          python-version: '3.x'
+          python-version: '3.8'
     - name: Remove some folders
       run: |
         rm -rf navitia-docker-compose
@@ -37,7 +35,7 @@ jobs:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
       run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f AzHicham -b dev
     - name: Pull remaining images
-      run: make pull_available TAG=local
+      run: make pull_available TAG=local || exit 0
     - name: Start all dockers 
       run: make start TAG=local
     - name: Run Artemis Test
