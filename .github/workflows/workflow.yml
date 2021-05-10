@@ -44,7 +44,7 @@ jobs:
     - name: Run Artemis Test
       env:
         PYTEST: 'idfm_test.py'
-      run: make test || exit 0
+      run: make test
     - name: Make Artemis Test
       run: make logs TAG=local > logs || exit 0
     - name: Archive Artemis artifacts
