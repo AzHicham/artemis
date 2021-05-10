@@ -42,9 +42,11 @@ jobs:
       env:
         PYTEST: 'idfm_test.py'
       run: make test || exit 0
-    - name: Make Artemis Test
+    - name: Build logs
+      if: ${{ always() }}
       run: make logs TAG=local > logs || exit 0
-    - name: Archive Artemis artifacts
+    - name: Archive Artemis artifacts (logs + ref)
+      if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
         name: logs-and-ref
