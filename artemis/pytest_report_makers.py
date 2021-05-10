@@ -446,27 +446,27 @@ def add_to_csv_report(ref_dict, resp_dict, test_name):
             for i in range(nb_max_section):
                 csv_report.write("resp_{}_walk;".format(i))
             csv_report.write("\n")
-        else:
-            csv_report.write("{};".format(test_name))
-            for i in range(nb_max_section):
-                nb_journey = nb_journey_with_k_pt_section(refs, i)
-                csv_report.write("{};".format(nb_journey))
-            for i in range(nb_max_section):
-                nb_journey = nb_journey_with_k_pt_section(resps, i)
-                csv_report.write("{};".format(nb_journey))
-            for i in range(nb_max_section):
-                total_walking = 0
-                for journey in refs:
-                    if nb_pt_section(journey) == i:
-                        total_walking += walking_duration_of(journey)
-                csv_report.write("{};".format(total_walking))
-            for i in range(nb_max_section):
-                total_walking = 0
-                for journey in resps:
-                    if nb_pt_section(journey) == i:
-                        total_walking += walking_duration_of(journey)
-                csv_report.write("{};".format(total_walking))
-            csv_report.write("\n")
+
+        csv_report.write("{};".format(test_name))
+        for i in range(nb_max_section):
+            nb_journey = nb_journey_with_k_pt_section(refs, i)
+            csv_report.write("{};".format(nb_journey))
+        for i in range(nb_max_section):
+            nb_journey = nb_journey_with_k_pt_section(resps, i)
+            csv_report.write("{};".format(nb_journey))
+        for i in range(nb_max_section):
+            total_walking = 0
+            for journey in refs:
+                if nb_pt_section(journey) == i:
+                    total_walking += walking_duration_of(journey)
+            csv_report.write("{};".format(total_walking))
+        for i in range(nb_max_section):
+            total_walking = 0
+            for journey in resps:
+                if nb_pt_section(journey) == i:
+                    total_walking += walking_duration_of(journey)
+            csv_report.write("{};".format(total_walking))
+        csv_report.write("\n")
 
 
 def add_to_report(test_name, test_query, report_message):
