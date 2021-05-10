@@ -15,7 +15,7 @@ jobs:
     - name: Make some space 
       run: rm -rf /usr/share/dotnet
     - name: Update docker
-      run: apt update && apt upgrade docker docker-compose
+      run: sudo apt update && sudo apt upgrade -y docker docker-compose
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
