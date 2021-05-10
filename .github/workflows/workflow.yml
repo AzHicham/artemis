@@ -40,3 +40,13 @@ jobs:
       run: make start TAG=local
     - name: Run Artemis Test
       run: make test
+    - name: Make Artemis Test
+      run: make logs TAG=local > logs || exit 0
+    - name: Archive Artemis artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs-and-ref
+        path: |
+            artemis/output/**/*
+            artemis/junit/*.xml
+            artemis/logs
