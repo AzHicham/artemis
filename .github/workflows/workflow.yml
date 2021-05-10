@@ -20,6 +20,8 @@ jobs:
         sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
         sudo apt-get update
         sudo apt-get install docker-ce
+        sudo apt-get upgrade docker 
+        sudo apt-get upgrade docker-compose 
     - name: Check Docker Version
       run: docker --version
     - name: Make some space 
@@ -45,7 +47,7 @@ jobs:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
       run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f CanalTP -b dev
     - name: Pull remaining images
-      run: make pull_available TAG=local || exit 0
+      run: make pull_available TAG=local
     - name: Start all dockers 
       run: make start TAG=local
     - name: Run Artemis Test
