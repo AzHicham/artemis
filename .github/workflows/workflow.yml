@@ -12,14 +12,9 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-    - name: Check Docker Version
-      run: docker --version
-    - name: Install Latest Docker
-      run: |
-        sudo apt update
-        sudo apt upgrade
-    - name: Check Docker Version
-      run: docker --version
+    - uses: KengoTODA/actions-setup-docker-compose@main
+      with:
+        version: '1.34.0'
     - name: Make some space 
       run: rm -rf /usr/share/dotnet
     - uses: actions/checkout@v2
