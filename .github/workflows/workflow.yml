@@ -47,6 +47,8 @@ jobs:
     - name: Start all dockers 
       run: make start TAG=local
     - name: Run Artemis Test
+      env:
+        PYTEST: 'itl_test.py'
       run: make test || exit 0
     - name: Make Artemis Test
       run: make logs TAG=local > logs || exit 0
@@ -55,6 +57,6 @@ jobs:
       with:
         name: logs-and-ref
         path: |
-            artemis/output/**/*
-            artemis/junit/*.xml
-            artemis/logs
+            output/**/*
+            junit/*.xml
+            logs
