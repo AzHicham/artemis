@@ -12,12 +12,10 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-    - name: Available space
-      run: df
     - name: Make some space 
       run: rm -rf /usr/share/dotnet
-    - name: Available space
-      run: df
+    - name: Update docker
+      run: apt update && apt upgrade docker docker-compose
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
@@ -39,7 +37,7 @@ jobs:
         ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
       run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f AzHicham -b dev
     - name: Pull remaining images
-      run: make pull_available TAG=local || exit 0
+      run: make pull_available TAG=local
     - name: Start all dockers 
       run: make start TAG=local
     - name: Run Artemis Test
