@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: KengoTODA/actions-setup-docker-compose@main
       with:
-        version: '1.34.0'
+        version: '1.23.2'
     - name: Make some space 
       run: rm -rf /usr/share/dotnet
     - uses: actions/checkout@v2
