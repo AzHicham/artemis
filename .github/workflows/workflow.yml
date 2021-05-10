@@ -39,8 +39,6 @@ jobs:
     - name: Start all dockers 
       run: make start TAG=local || exit 0
     - name: Run Artemis Test
-      env:
-        PYTEST: 'idfm_test.py'
       run: make test || exit 0
     - name: Build logs
       if: ${{ always() }}
@@ -54,3 +52,14 @@ jobs:
             output/**/*
             junit/*.xml
             logs
+    - name: Store benchmark result
+      uses: rhysd/github-action-benchmark@v1
+      with:
+        # What benchmark tool the output.txt came from
+        tool: 'pytest'
+        # Where the output from the benchmark tool is stored
+        output-file-path: output.txt
+        # Where the previous data file is stored
+        external-data-json-path: ./cache/benchmark-data.json
+        # Workflow will fail when an alert happens
+        fail-on-alert: true
