@@ -28,6 +28,7 @@ pipeline {
         )
     }
     options {
+        disableConcurrentBuilds()
         ansiColor('xterm')
     }
     stages {
@@ -52,7 +53,20 @@ pipeline {
                 }
             }
         }
-
+		stage('Clean Docker containers and images') {
+			steps {
+				dir("./artemis/") {
+					// Tear down Navitia stack
+					sh 'make stop TAG=local || exit 0'
+					// remove images
+					sh 'make clean_images TAG=local || exit 0'
+					// FORCE stop and remove artemis containers and images
+					sh 'docker stop \$(docker ps -a -q -f name=artemis) || exit 0'
+					sh 'docker rm \$(docker ps -a -q -f name=artemis) || exit 0'
+					sh 'docker image rm \$(docker images --filter=reference=artemis -q) || exit 0'
+				}
+			}
+		}
         stage('Build docker images') {
             environment {
                 BRANCH  = "${params.navitia_branch}"
@@ -60,7 +74,6 @@ pipeline {
                 FORK    = "${params.navitia_fork}"
             }
             steps {
-
                 withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
                     dir("./artemis/navitia-docker-compose/builder_from_package/") {
                         sh "./build.sh -o ${GITHUB_TOKEN} -t local -e ${EVENT} -f ${FORK} -b ${BRANCH}"
@@ -92,7 +105,6 @@ pipeline {
                 PYTEST      = ''
                 PYTEST_ARGS  = ''
             }
-
             steps {
                 dir("./artemis/") {
                     sh "make test"
@@ -112,11 +124,14 @@ pipeline {
         success { echo 'Job is successful, HO YEAH !' }
         cleanup {
             dir("./artemis/") {
-            // shutdown dockers
-                sh 'make stop TAG=local || exit 0'
-                // remove images
-                sh 'make clean_images TAG=local || exit 0'
-                // remove files on disk
+				// Tear down Navitia stack
+				sh 'make stop TAG=local || exit 0'
+				// remove images
+				sh 'make clean_images TAG=local || exit 0'
+				// FORCE stop and remove artemis containers and images
+				sh 'docker stop \$(docker ps -a -q -f name=artemis) || exit 0'
+				sh 'docker rm \$(docker ps -a -q -f name=artemis) || exit 0'
+				sh 'docker image rm \$(docker images --filter=reference=artemis -q) || exit 0'
             }
             cleanWs()
         }
