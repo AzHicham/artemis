@@ -232,7 +232,7 @@ class ArtemisTestFixture(CommonTestFixture):
             for data_set in cls.data_sets:
                 cur.execute(
                     "INSERT INTO instance (name, is_free, is_open_data, scenario) VALUES ('{}', true, false, '{}');".format(
-                        data_set.name, ""
+                        data_set.name, "experimental"
                     )
                 )
 

@@ -59,7 +59,7 @@ class CommonTestFixture(object):
         return "Test{}".format(mro[1].__name__)
 
     def get_reference_suffix_path(self):
-        return self.get_dataset_name()
+        return os.path.join(self.get_dataset_name())
 
     def get_reference_filename_prefix(self):
         """
