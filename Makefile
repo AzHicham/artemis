@@ -61,7 +61,7 @@ stop: ## Tear down Navitia stack
 
 clean: ## Remove stopped containers
 	$(call docker_compose,${TAG}, rm --force --stop -v)
-	
+
 clean_artemis: ## Remove artemis container (container executing tests)
 	docker rm --force $$(docker ps -a -q -f name=artemis)
 
