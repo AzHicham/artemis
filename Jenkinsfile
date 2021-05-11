@@ -62,6 +62,7 @@ pipeline {
 					sh 'make clean_images TAG=local || exit 0'
 					// FORCE stop and remove artemis containers and images
 					sh 'docker stop \$(docker ps -a -q -f name=artemis) || exit 0'
+					sh 'docker kill \$(docker ps -a -q -f name=artemis) || exit 0'
 					sh 'docker rm \$(docker ps -a -q -f name=artemis) || exit 0'
 					sh 'docker image rm \$(docker images --filter=reference=artemis -q) || exit 0'
 				}
