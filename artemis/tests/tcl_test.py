@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -96,6 +96,5 @@ class TCL(object):
         )
 
 
-@set_scenario({"tcl": {"scenario": "experimental"}})
 class TestTCLExperimental(TCL, ArtemisTestFixture):
     pass

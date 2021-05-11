@@ -62,10 +62,9 @@ class ArtemisTestFixture(CommonTestFixture):
         """
         mro = inspect.getmro(self.__class__)
         class_name = "Test{}".format(mro[1].__name__)
-        scenario = mro[0].data_sets[0].scenario
 
         func_name = utils.get_calling_test_function()
-        test_name = "{}/{}/{}".format(class_name, scenario, func_name)
+        test_name = "{}/{}".format(class_name, func_name)
 
         self.test_counter[test_name] += 1
 
@@ -233,7 +232,7 @@ class ArtemisTestFixture(CommonTestFixture):
             for data_set in cls.data_sets:
                 cur.execute(
                     "INSERT INTO instance (name, is_free, is_open_data, scenario) VALUES ('{}', true, false, '{}');".format(
-                        data_set.name, data_set.scenario
+                        data_set.name, ""
                     )
                 )
 

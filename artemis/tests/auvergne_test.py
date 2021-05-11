@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -299,7 +299,6 @@ class Auvergne(object):
         self.journey(**request)
 
 
-@set_scenario({"fr-auv": {"scenario": "experimental"}})
 class TestAuvergneExperimental(Auvergne, ArtemisTestFixture):
     @xfail(
         reason="we need to update the marshaller and the references for taxi distances and durations",

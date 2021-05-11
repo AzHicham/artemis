@@ -1,6 +1,6 @@
 from artemis import default_checker
 from artemis.default_checker import stop_schedule_checker
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -415,7 +415,6 @@ class Bibus(object):
         self.api("_geo_status")
 
 
-@set_scenario({"bibus": {"scenario": "experimental"}})
 class TestBibusExperimental(Bibus, ArtemisTestFixture):
     # There is not any stop_point within 50 seconds of walking period from origin
     def test_no_origin(self):

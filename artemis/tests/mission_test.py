@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -67,6 +67,5 @@ class Mission(object):
         )
 
 
-@set_scenario({"mission": {"scenario": "experimental"}})
 class TestMissionExperimental(Mission, ArtemisTestFixture):
     pass

@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -53,6 +53,5 @@ class FreqGtfs_01(object):
         )
 
 
-@set_scenario({"freqgtfs-01": {"scenario": "experimental"}})
 class TestFreqGtfs_01Experimental(FreqGtfs_01, ArtemisTestFixture):
     pass

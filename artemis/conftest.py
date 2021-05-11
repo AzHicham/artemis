@@ -104,15 +104,14 @@ def load_cities(request):
 
         wait_for_cities_completion()
         log.info("Cities task finished")
-        return
+    else:
+        log.info("loading cities database")
 
-    log.info("loading cities database")
+        utils.launch_exec(
+            "cities -i {input} --connection-string".format(
+                input=config["CITIES_INPUT_FILE"]
+            ),
+            additional_args=[config["CITIES_DB"]],
+        )
 
-    utils.launch_exec(
-        "cities -i {input} --connection-string".format(
-            input=config["CITIES_INPUT_FILE"]
-        ),
-        additional_args=[config["CITIES_DB"]],
-    )
-
-    log.info("cities database loaded")
+        log.info("cities database loaded")

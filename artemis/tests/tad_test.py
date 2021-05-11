@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -306,6 +306,5 @@ class Tad(object):
         )
 
 
-@set_scenario({"tad": {"scenario": "experimental"}})
 class TestTadExperimental(Tad, ArtemisTestFixture):
     pass

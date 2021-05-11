@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -33,6 +33,5 @@ class Boucle01(object):
         )
 
 
-@set_scenario({"boucle-01": {"scenario": "experimental"}})
 class TestBoucle01Experimental(Boucle01, ArtemisTestFixture):
     pass
