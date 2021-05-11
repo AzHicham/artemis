@@ -1748,11 +1748,6 @@ class GuichetUnique(object):
         )
 
 
-@set_scenario({COVERAGE: {"scenario": "new_default"}})
-class TestGuichetUniqueNewDefault(GuichetUnique, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({COVERAGE: {"scenario": "experimental"}})
 class TestGuichetUniqueExperimental(GuichetUnique, ArtemisTestFixture):
     pass

@@ -159,11 +159,6 @@ class Sherbrooke(object):
         )
 
 
-@set_scenario({"sherbrooke": {"scenario": "new_default"}})
-class TestSherbrookeNewDefault(Sherbrooke, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"sherbrooke": {"scenario": "experimental"}})
 class TestSherbrookeExperimental(Sherbrooke, ArtemisTestFixture):
     pass

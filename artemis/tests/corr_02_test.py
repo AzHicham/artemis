@@ -30,11 +30,6 @@ class Corr02(object):
         )
 
 
-@set_scenario({"corr-02": {"scenario": "new_default"}})
-class TestCorr02NewDefault(Corr02, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"corr-02": {"scenario": "experimental"}})
 class TestCorr02Experimental(Corr02, ArtemisTestFixture):
     pass

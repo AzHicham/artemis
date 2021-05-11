@@ -71,11 +71,6 @@ class Map(object):
         )
 
 
-@set_scenario({"map": {"scenario": "new_default"}})
-class TestMapNewDefault(Map, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"map": {"scenario": "experimental"}})
 class TestMapExperimental(Map, ArtemisTestFixture):
     pass

@@ -306,11 +306,6 @@ class Tad(object):
         )
 
 
-@set_scenario({"tad": {"scenario": "new_default"}})
-class TestTadNewDefault(Tad, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"tad": {"scenario": "experimental"}})
 class TestTadExperimental(Tad, ArtemisTestFixture):
     pass

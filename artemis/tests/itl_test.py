@@ -27,11 +27,6 @@ class Itl(object):
         )
 
 
-@set_scenario({"itl": {"scenario": "new_default"}})
-class TestItlNewDefault(Itl, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"itl": {"scenario": "experimental"}})
 class TestItlExperimental(Itl, ArtemisTestFixture):
     pass

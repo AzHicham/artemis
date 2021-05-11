@@ -5538,11 +5538,6 @@ class IdfM(object):
         )
 
 
-@set_scenario({"idfm": {"scenario": "new_default"}})
-class TestIdfMNewDefault(IdfM, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"idfm": {"scenario": "experimental"}})
 class TestIdfMExperimental(IdfM, ArtemisTestFixture):
     pass

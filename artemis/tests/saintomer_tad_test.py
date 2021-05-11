@@ -107,11 +107,6 @@ class SaintOmer(object):
         )
 
 
-@set_scenario({"saintomer": {"scenario": "new_default"}})
-class TestSaintOmerNewDefault(SaintOmer, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"saintomer": {"scenario": "experimental"}})
 class TestSaintOmerExperimental(SaintOmer, ArtemisTestFixture):
     pass

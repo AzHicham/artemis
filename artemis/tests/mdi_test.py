@@ -39,11 +39,6 @@ class MDI(object):
         )
 
 
-@set_scenario({"mdi": {"scenario": "new_default"}})
-class TestMDINewDefault(MDI, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"mdi": {"scenario": "experimental"}})
 class TestMDIExperimental(MDI, ArtemisTestFixture):
     pass

@@ -48,11 +48,6 @@ class FreqGtfs(object):
         )
 
 
-@set_scenario({"freqgtfs": {"scenario": "new_default"}})
-class TestFreqGtfsNewDefault(FreqGtfs, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"freqgtfs": {"scenario": "experimental"}})
 class TestFreqGtfsExperimental(FreqGtfs, ArtemisTestFixture):
     pass

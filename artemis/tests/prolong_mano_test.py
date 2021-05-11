@@ -32,11 +32,6 @@ class ProlongMano(object):
         )
 
 
-@set_scenario({"prolong-mano": {"scenario": "new_default"}})
-class TestProlongManoNewDefault(ProlongMano, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"prolong-mano": {"scenario": "experimental"}})
 class TestProlongManoExperimental(ProlongMano, ArtemisTestFixture):
     pass

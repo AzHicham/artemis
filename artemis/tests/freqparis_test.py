@@ -62,11 +62,6 @@ class FreqParis(object):
         )
 
 
-@set_scenario({"freqparis": {"scenario": "new_default"}})
-class TestFreqParisNewDefault(FreqParis, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"freqparis": {"scenario": "experimental"}})
 class TestFreqParisExperimental(FreqParis, ArtemisTestFixture):
     pass

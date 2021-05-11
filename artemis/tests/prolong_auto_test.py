@@ -38,11 +38,6 @@ class ProlongAuto(object):
         )
 
 
-@set_scenario({"prolong-auto": {"scenario": "new_default"}})
-class TestProlongAutoNewDefault(ProlongAuto, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"prolong-auto": {"scenario": "experimental"}})
 class TestProlongAutoExperimental(ProlongAuto, ArtemisTestFixture):
     pass

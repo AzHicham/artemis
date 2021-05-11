@@ -108,11 +108,6 @@ class Poitiers(object):
         )
 
 
-@set_scenario({"poitiers": {"scenario": "new_default"}})
-class TestPoitiersNewDefault(Poitiers, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"poitiers": {"scenario": "experimental"}})
 class TestPoitiersExperimental(Poitiers, ArtemisTestFixture):
     pass

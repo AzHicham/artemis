@@ -18,11 +18,6 @@ class NbCorr05(object):
         )
 
 
-@set_scenario({"nb-corr-05": {"scenario": "new_default"}})
-class TestNbCorr05NewDefault(NbCorr05, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"nb-corr-05": {"scenario": "experimental"}})
 class TestNbCorr05Experimental(NbCorr05, ArtemisTestFixture):
     pass

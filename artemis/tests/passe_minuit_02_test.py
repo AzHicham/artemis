@@ -110,11 +110,6 @@ class PasseMinuit02(object):
         )
 
 
-@set_scenario({"passe-minuit-02": {"scenario": "new_default"}})
-class TestPasseMinuit02NewDefault(PasseMinuit02, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"passe-minuit-02": {"scenario": "experimental"}})
 class TestPasseMinuit02Experimental(PasseMinuit02, ArtemisTestFixture):
     pass

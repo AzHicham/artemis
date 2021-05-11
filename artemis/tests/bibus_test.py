@@ -415,11 +415,6 @@ class Bibus(object):
         self.api("_geo_status")
 
 
-@set_scenario({"bibus": {"scenario": "new_default"}})
-class TestBibusNewDefault(Bibus, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"bibus": {"scenario": "experimental"}})
 class TestBibusExperimental(Bibus, ArtemisTestFixture):
     # There is not any stop_point within 50 seconds of walking period from origin

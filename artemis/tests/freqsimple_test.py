@@ -48,11 +48,6 @@ class FreqSimple(object):
         )
 
 
-@set_scenario({"freqsimple": {"scenario": "new_default"}})
-class TestFreqSimpleNewDefault(FreqSimple, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"freqsimple": {"scenario": "experimental"}})
 class TestFreqSimpleExperimental(FreqSimple, ArtemisTestFixture):
     pass

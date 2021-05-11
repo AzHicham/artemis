@@ -39,11 +39,6 @@ class ArtTest02(object):
         )
 
 
-@set_scenario({"test-02": {"scenario": "new_default"}})
-class TestArtTest02NewDefault(ArtTest02, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"test-02": {"scenario": "experimental"}})
 class TestArtTest02Experimental(ArtTest02, ArtemisTestFixture):
     pass

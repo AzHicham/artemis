@@ -67,11 +67,6 @@ class Rebroussement(object):
         )
 
 
-@set_scenario({"rebroussement": {"scenario": "new_default"}})
-class TestRebroussementNewDefault(Rebroussement, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"rebroussement": {"scenario": "experimental"}})
 class TestRebroussementExperimental(Rebroussement, ArtemisTestFixture):
     pass

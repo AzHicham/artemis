@@ -96,11 +96,6 @@ class TCL(object):
         )
 
 
-@set_scenario({"tcl": {"scenario": "new_default"}})
-class TestTCLNewDefault(TCL, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"tcl": {"scenario": "experimental"}})
 class TestTCLExperimental(TCL, ArtemisTestFixture):
     pass

@@ -67,11 +67,6 @@ class Mission(object):
         )
 
 
-@set_scenario({"mission": {"scenario": "new_default"}})
-class TestMissionNewDefault(Mission, ArtemisTestFixture):
-    pass
-
-
 @set_scenario({"mission": {"scenario": "experimental"}})
 class TestMissionExperimental(Mission, ArtemisTestFixture):
     pass
