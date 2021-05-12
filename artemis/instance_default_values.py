@@ -1,5 +1,4 @@
 default_values = {
-    "scenario": "new_default",
     "journey_order": "arrival_time",
     "bike_speed": 4.1,
     "bss_speed": 4.1,

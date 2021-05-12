@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -107,11 +107,5 @@ class SaintOmer(object):
         )
 
 
-@set_scenario({"saintomer": {"scenario": "new_default"}})
-class TestSaintOmerNewDefault(SaintOmer, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"saintomer": {"scenario": "experimental"}})
 class TestSaintOmerExperimental(SaintOmer, ArtemisTestFixture):
     pass

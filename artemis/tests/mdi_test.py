@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -39,11 +39,5 @@ class MDI(object):
         )
 
 
-@set_scenario({"mdi": {"scenario": "new_default"}})
-class TestMDINewDefault(MDI, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"mdi": {"scenario": "experimental"}})
 class TestMDIExperimental(MDI, ArtemisTestFixture):
     pass

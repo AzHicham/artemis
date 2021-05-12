@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -159,11 +159,5 @@ class Sherbrooke(object):
         )
 
 
-@set_scenario({"sherbrooke": {"scenario": "new_default"}})
-class TestSherbrookeNewDefault(Sherbrooke, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"sherbrooke": {"scenario": "experimental"}})
 class TestSherbrookeExperimental(Sherbrooke, ArtemisTestFixture):
     pass

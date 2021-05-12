@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -38,11 +38,5 @@ class ProlongAuto(object):
         )
 
 
-@set_scenario({"prolong-auto": {"scenario": "new_default"}})
-class TestProlongAutoNewDefault(ProlongAuto, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"prolong-auto": {"scenario": "experimental"}})
 class TestProlongAutoExperimental(ProlongAuto, ArtemisTestFixture):
     pass

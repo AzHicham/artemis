@@ -58,12 +58,8 @@ class CommonTestFixture(object):
         mro = inspect.getmro(self.__class__)
         return "Test{}".format(mro[1].__name__)
 
-    def get_scenario_name(self):
-        mro = inspect.getmro(self.__class__)
-        return mro[0].data_sets[0].scenario
-
     def get_reference_suffix_path(self):
-        return os.path.join(self.get_dataset_name(), self.get_scenario_name())
+        return os.path.join(self.get_dataset_name())
 
     def get_reference_filename_prefix(self):
         """
@@ -159,10 +155,8 @@ class DataSet(object):
         name,
         reload_timeout=datetime.timedelta(minutes=30),
         fixed_wait=datetime.timedelta(seconds=20),
-        scenario="default",
     ):
         self.name = name
-        self.scenario = scenario
         self.reload_timeout = reload_timeout
         self.fixed_wait = fixed_wait
 
@@ -178,30 +172,6 @@ def dataset(datasets):
 
     def deco(cls):
         cls.data_sets = datasets
-        return cls
-
-    return deco
-
-
-def set_scenario(config):
-    def deco(cls):
-        cls.data_sets = []
-        for c in cls.__bases__:
-            if hasattr(c, "data_sets"):
-                for data_set in c.data_sets:
-                    cls.data_sets.append(
-                        DataSet(
-                            name=data_set.name,
-                            reload_timeout=data_set.reload_timeout,
-                            fixed_wait=data_set.fixed_wait,
-                            scenario=data_set.scenario,
-                        )
-                    )
-        if config:
-            for dataset in cls.data_sets:
-                conf = config.get(dataset.name, None)
-                if conf:
-                    dataset.scenario = conf.get("scenario", "default")
         return cls
 
     return deco

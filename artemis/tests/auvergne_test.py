@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -295,19 +295,10 @@ class Auvergne(object):
             "direct_path": "only",
             "bike_speed": 1,
         }
-        if isinstance(self, TestAuvergneNewDefault):
-            # we want to have this direct_path with new_default
-            request["max_duration_to_pt"] = 7200
 
         self.journey(**request)
 
 
-@set_scenario({"fr-auv": {"scenario": "new_default"}})
-class TestAuvergneNewDefault(Auvergne, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"fr-auv": {"scenario": "experimental"}})
 class TestAuvergneExperimental(Auvergne, ArtemisTestFixture):
     @xfail(
         reason="we need to update the marshaller and the references for taxi distances and durations",

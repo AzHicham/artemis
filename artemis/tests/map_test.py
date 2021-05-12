@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -71,11 +71,5 @@ class Map(object):
         )
 
 
-@set_scenario({"map": {"scenario": "new_default"}})
-class TestMapNewDefault(Map, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"map": {"scenario": "experimental"}})
 class TestMapExperimental(Map, ArtemisTestFixture):
     pass
