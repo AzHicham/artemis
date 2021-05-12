@@ -408,7 +408,12 @@ class ArtemisTestFixture(CommonTestFixture):
         """
         pass
 
-    def api(self, url, response_checker=default_checker.default_checker):
+    def api(
+        self,
+        url,
+        response_checker=default_checker.default_checker,
+        enable_benchmark=False,
+    ):
         """
         Call to an endpoint using a coverage
         NOTE: works only when one region is loaded for the moment (when needed change this)
@@ -416,9 +421,9 @@ class ArtemisTestFixture(CommonTestFixture):
         coverage_query = "/coverage/{coverage_name}/{query}".format(
             coverage_name=str(self.data_sets[0]), query=url
         )
-        return self._api_call(coverage_query, response_checker)
+        return self._api_call(coverage_query, response_checker, enable_benchmark)
 
-    def _api_call(self, url, response_checker):
+    def _api_call(self, url, response_checker, enable_benchmark):
         """
         call the api and check against previous results
 
@@ -427,7 +432,11 @@ class ArtemisTestFixture(CommonTestFixture):
         http_query = "{base_query}/v1{url}".format(
             base_query=config["URL_JORMUN"], url=url
         )
-        http_response = self.benchmark(requests.get, http_query)
+        http_response = (
+            self.benchmark(requests.get, http_query)
+            if enable_benchmark
+            else requests.get(http_query)
+        )
         self.compare(http_query, http_response, response_checker)
 
     def journey(
@@ -440,6 +449,7 @@ class ArtemisTestFixture(CommonTestFixture):
         last_section_mode=[],
         forbidden_uris=[],
         direct_path_mode=[],
+        enable_benchmark=False,
         **kwargs
     ):
         """
@@ -480,7 +490,11 @@ class ArtemisTestFixture(CommonTestFixture):
             coverage=str(self.data_sets[0]),
             query_parameters=query,
         )
-        http_response = self.benchmark(requests.get, http_query)
+        http_response = (
+            self.benchmark(requests.get, http_query)
+            if enable_benchmark
+            else requests.get(http_query)
+        )
         self.compare(http_query, http_response, default_checker.default_journey_checker)
 
     def write_full_response_to_file(

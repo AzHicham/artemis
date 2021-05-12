@@ -5523,6 +5523,7 @@ class IdfM(object):
             _from="2.8819999999999997;48.9591",
             to="2.35351;48.88843",
             datetime="20190314T180000",
+            enable_benchmark=True,
             **IDFM_PARAMS
         )
 
@@ -5538,5 +5539,6 @@ class IdfM(object):
         )
 
 
+@pytest.mark.benchmark(group="IdfM")
 class TestIdfMExperimental(IdfM, ArtemisTestFixture):
     pass
