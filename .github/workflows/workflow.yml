@@ -5,25 +5,71 @@ on:
     branches:
       - master
   pull_request:
-  release:
-    types:
-      - created
-
+    branches:
+      - master
 
 jobs:
-  precommit:
+  checks:
     runs-on: ubuntu-latest
     steps:
+    - name: Make some space 
+      run: rm -rf /usr/share/dotnet
     - uses: actions/checkout@v2
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
-        python-version: '3.6'
-        architecture: 'x64'
-    - name: install dependencies
+          python-version: '3.7'
+    - name: Remove some folders
       run: |
-        pip install -r requirements.txt
-        pre-commit install
-    - name: run pre-commit
+        rm -rf navitia-docker-compose
+        rm -rf artemis_data
+        rm -rf artemis_references
+    - name: Pull Navitia-docker-compose
+      env:
+        ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
       run: |
-        pre-commit run --all-files --show-diff-on-failure
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/navitia-docker-compose.git --branch master ./navitia-docker-compose
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/CanalTP/artemis_data.git --branch master ./artemis_data
+        git clone https://$ARTEMIS_GITHUB_TOKEN@github.com/AzHicham/artemis_references.git --branch artemis_ng ./artemis_references
+    - name: Build docker image
+      env:
+        ARTEMIS_GITHUB_TOKEN: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
+      run: cd navitia-docker-compose/builder_from_package && ./build.sh -o $ARTEMIS_GITHUB_TOKEN -t local -e push -f CanalTP -b dev
+    - name: Pull remaining images || exit 0
+      run: make pull_available TAG=local || exit 0
+    - name: Start all dockers 
+      run: make start TAG=local || exit 0
+    - name: Run Artemis Test
+      run: make test
+    - name: Build logs
+      if: ${{ always() }}
+      run: make logs TAG=local > logs || exit 0
+    - name: Archive Artemis artifacts (logs + ref)
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs-and-ref
+        path: |
+            output/**/*
+            junit/*.xml
+            logs
+    - name: Download previous benchmark data
+        uses: actions/cache@v2
+        with:
+          path: ./cache
+          key: cache-benchmark
+    - name: Store benchmark result
+      uses: rhysd/github-action-benchmark@v1
+      with:
+        # What benchmark tool the output.txt came from
+        tool: 'pytest'
+        github-token: ${{ secrets.ARTEMIS_GITHUB_TOKEN }}
+        auto-push: true
+        # Where the output from the benchmark tool is stored
+        output-file-path: output.txt
+        # Where the previous data file is stored
+        external-data-json-path: ./cache/benchmark-data.json
+        # Workflow will fail when an alert happens
+        fail-on-alert: true
+        alert-threshold: '200%'
+        comment-on-alert: true
+        alert-comment-cc-users: '@AzHicham'
