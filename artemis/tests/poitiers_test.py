@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -108,11 +108,5 @@ class Poitiers(object):
         )
 
 
-@set_scenario({"poitiers": {"scenario": "new_default"}})
-class TestPoitiersNewDefault(Poitiers, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"poitiers": {"scenario": "experimental"}})
 class TestPoitiersExperimental(Poitiers, ArtemisTestFixture):
     pass

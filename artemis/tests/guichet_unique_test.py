@@ -1,4 +1,4 @@
-from artemis.common_fixture import clean_kirin_db, dataset, DataSet, set_scenario
+from artemis.common_fixture import clean_kirin_db, dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -110,7 +110,7 @@ class GuichetUnique(object):
 
     def test_too_long_waiting_filter(self):
         """
-        Test a journey from saint quentin -> saint just in the new_default scenario
+        Test a journey from saint quentin -> saint just
 
         The query is late, and without filter we have 2 journeys
 
@@ -1748,11 +1748,5 @@ class GuichetUnique(object):
         )
 
 
-@set_scenario({COVERAGE: {"scenario": "new_default"}})
-class TestGuichetUniqueNewDefault(GuichetUnique, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({COVERAGE: {"scenario": "experimental"}})
 class TestGuichetUniqueExperimental(GuichetUnique, ArtemisTestFixture):
     pass

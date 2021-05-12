@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -48,11 +48,5 @@ class FreqSimple(object):
         )
 
 
-@set_scenario({"freqsimple": {"scenario": "new_default"}})
-class TestFreqSimpleNewDefault(FreqSimple, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"freqsimple": {"scenario": "experimental"}})
 class TestFreqSimpleExperimental(FreqSimple, ArtemisTestFixture):
     pass

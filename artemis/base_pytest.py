@@ -485,19 +485,6 @@ class ArtemisTestFixture(CommonTestFixture):
         for k, v in six.iteritems(kwargs):
             query = "{query}&{k}={v}".format(query=query, k=k, v=v)
 
-        # Override scenario
-        if self.__class__.data_sets[0].scenario in [
-            "distributed",
-            "experimental",
-            "asgard",
-        ]:
-            overridden_scenario = "distributed"
-        else:
-            overridden_scenario = "new_default"
-        query = "{query}&_override_scenario={scenario}".format(
-            query=query, scenario=overridden_scenario
-        )
-
         # Add current_datetime for disruptions
         query = "{query}&_current_datetime={d}".format(query=query, d=datetime)
 

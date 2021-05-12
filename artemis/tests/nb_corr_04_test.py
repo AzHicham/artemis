@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 import pytest
 
@@ -25,11 +25,5 @@ class NbCorr04(object):
         )
 
 
-@set_scenario({"nb-corr-04": {"scenario": "new_default"}})
-class TestNbCorr04NewDefault(NbCorr04, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"nb-corr-04": {"scenario": "experimental"}})
 class TestNbCorr04Experimental(NbCorr04, ArtemisTestFixture):
     pass

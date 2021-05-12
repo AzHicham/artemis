@@ -1,4 +1,4 @@
-from artemis.common_fixture import dataset, DataSet, set_scenario
+from artemis.common_fixture import dataset, DataSet
 from artemis.tests.fixture import ArtemisTestFixture
 from artemis.configuration_manager import config
 import pytest
@@ -5538,11 +5538,5 @@ class IdfM(object):
         )
 
 
-@set_scenario({"idfm": {"scenario": "new_default"}})
-class TestIdfMNewDefault(IdfM, ArtemisTestFixture):
-    pass
-
-
-@set_scenario({"idfm": {"scenario": "experimental"}})
 class TestIdfMExperimental(IdfM, ArtemisTestFixture):
     pass
