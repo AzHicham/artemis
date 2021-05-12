@@ -53,10 +53,10 @@ jobs:
             junit/*.xml
             logs
     - name: Download previous benchmark data
-        uses: actions/cache@v2
-        with:
-          path: ./cache
-          key: cache-benchmark
+      uses: actions/cache@v2
+      with:
+        path: ./cache
+        key: cache-benchmark
     - name: Store benchmark result
       uses: rhysd/github-action-benchmark@v1
       with:
