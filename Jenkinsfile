@@ -101,7 +101,7 @@ pipeline {
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
                 PYTEST      = ''
-                PYTEST_ARGS  = ''
+                PYTEST_ARGS  = '--benchmark-enable --benchmark-storage=file://./.benchmarks  --benchmark-columns=\'mean,min,max,median,stddev\' --benchmark-autosave'
             }
             steps {
                 dir("./artemis/") {
@@ -113,6 +113,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
+            archiveArtifacts artifacts: 'artemis/.benchmarks/**/*', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
             dir("./artemis/") {
                 sh 'make logs TAG=local > logs || exit 0'

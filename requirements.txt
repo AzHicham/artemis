@@ -1,3 +1,4 @@
+Flask==1.1.4
 Flask-RESTful==0.3.5
 pytest>2.7.2
 docker-compose==1.23.2
@@ -14,4 +15,4 @@ black==18.9b0; python_version >= '3.6.0'
 mypy==0.670; python_version > '3.0'
 flake8==3.5.0
 pre-commit==1.18.3
-pytest-benchmark
+pytest-benchmark==3.4.1

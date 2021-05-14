@@ -40,7 +40,7 @@ start: ## Deploy Navitia stack and Artemis instances using navitia-docker-compos
 	$(call docker_compose,${TAG}, up --detach)
 
 test: build ## Run Artemis tests, use PYTEST='sherbrooke_test.py' and PYTEST_ARGS='--skip_bina' envvar
-	$(call run_artemis,INFO,${PYTEST}, ${PYTEST_ARGS}, --benchmark-autosave)
+	$(call run_artemis,INFO,${PYTEST}, ${PYTEST_ARGS})
 
 debug: build ## Debug test run. use PYTEST='sherbrooke_test.py' and PYTEST_ARGS='--skip_bina' envvar
 	$(call run_artemis,DEBUG,${PYTEST}, ${PYTEST_ARGS}, --capture=no --showlocals)
