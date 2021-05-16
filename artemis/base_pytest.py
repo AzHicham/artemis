@@ -423,7 +423,7 @@ class ArtemisTestFixture(CommonTestFixture):
         )
         return self._api_call(coverage_query, response_checker, enable_benchmark)
 
-    def _api_call(self, url, response_checker, enable_benchmark):
+    def _api_call(self, url, response_checker, enable_benchmark=False):
         """
         call the api and check against previous results
 
