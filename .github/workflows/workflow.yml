@@ -39,7 +39,7 @@ jobs:
     - name: Start all dockers 
       run: make start TAG=local || exit 0
     - name: Run Artemis Test
-      run: make test
+      run: make test  --benchmark-json output.json
     - name: Build logs
       if: ${{ always() }}
       run: make logs TAG=local > logs || exit 0
