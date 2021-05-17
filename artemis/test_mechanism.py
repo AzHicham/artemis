@@ -322,7 +322,12 @@ class ArtemisTestFixture(CommonTestFixture):
     # wrappers around utils functions #
     ###################################
 
-    def api(self, url, response_checker=default_checker.default_checker, enable_benchmark=False):
+    def api(
+        self,
+        url,
+        response_checker=default_checker.default_checker,
+        enable_benchmark=False,
+    ):
         """
         used to check misc API
 
