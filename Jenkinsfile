@@ -101,7 +101,7 @@ pipeline {
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
                 PYTEST      = ''
-                PYTEST_ARGS  = '--benchmark-enable --benchmark-storage=file://./.benchmarks  --benchmark-columns=\'mean,min,max,median,stddev\' --benchmark-autosave'
+                PYTEST_ARGS  = '--benchmark-enable --benchmark-storage=file://./.benchmarks --benchmark-autosave'
             }
             steps {
                 dir("./artemis/") {
