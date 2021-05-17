@@ -40,7 +40,7 @@ jobs:
       run: make start TAG=local || exit 0
     - name: Run Artemis Test
       env:
-        PYTEST: "tcl_test.py"
+        PYTEST: "idfm_test.py"
         PYTEST_ARGS: "--benchmark-json output.json"
       run: make test
     - name: Build logs
