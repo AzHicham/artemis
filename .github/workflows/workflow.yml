@@ -40,6 +40,7 @@ jobs:
       run: make start TAG=local || exit 0
     - name: Run Artemis Test
       env:
+        PYTEST: "tcl_test.py"
         PYTEST_ARGS: "--benchmark-json output.json"
       run: make test
     - name: Build logs
@@ -74,3 +75,4 @@ jobs:
         alert-threshold: '200%'
         comment-on-alert: true
         alert-comment-cc-users: '@AzHicham'
+        skip-fetch-gh-pages: true
