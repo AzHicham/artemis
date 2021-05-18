@@ -51,7 +51,7 @@ jobs:
       run: make pull_available TAG=local || exit 0
     - name: Start dockers
       run: make start TAG=local || exit 0
-    - name: Run Artemis Test
+    - name: Run Test
       env:
         PYTEST: ''
         PYTEST_ARGS: "--benchmark-json output.json"
@@ -59,15 +59,6 @@ jobs:
     - name: Aggregate logs
       if: ${{ always() }}
       run: make logs TAG=local > logs || exit 0
-    - name: Archive Artemis artifacts (logs + ref)
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: logs-and-ref
-        path: |
-            output/**/*
-            junit/*.xml
-            logs
     - name: Download previous benchmark data
       uses: actions/cache@v2
       with:
