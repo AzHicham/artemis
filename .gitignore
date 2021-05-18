@@ -1,0 +1,12 @@
+/.idea
+*pyc
+__pycache__
+venv/*
+
+output/
+
+.mypy_cache/3.6/
+
+artemis/tests/.benchmarks/Linux-CPython-3.8-64bit/
+
+.benchmarks/Linux-CPython-3.7-64bit/
