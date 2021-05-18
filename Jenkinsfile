@@ -5,7 +5,7 @@ pipeline {
         string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
         string(name: 'artemis_data_repo', defaultValue: 'CanalTP/artemis_data', description: 'Artemis_data github repository ')
         string(name: 'artemis_data_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
-        string(name: 'artemis_ref_repo', defaultValue: 'pbench/artemis_references', description: 'Artemis_references github repository ')
+        string(name: 'artemis_ref_repo', defaultValue: 'AzHicham/artemis_references', description: 'Artemis_references github repository ')
         string(name: 'artemis_ref_branch', defaultValue: 'artemis_ng', description: 'Artemis_references branch to checkout')
         string(name: 'navitia_docker_compose_repo', defaultValue: 'CanalTP/navitia-docker-compose', description: 'Navitia_docker_compose github repository')
         string(name: 'navitia_docker_compose_branch', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
@@ -101,7 +101,7 @@ pipeline {
                 // To stop on the first failing test
                 //      PYTEST_ARG = '--exitfirst'
                 PYTEST      = ''
-                PYTEST_ARGS  = ''
+                PYTEST_ARGS  = '--benchmark-enable --benchmark-storage=file://./.benchmarks --benchmark-autosave'
             }
             steps {
                 dir("./artemis/") {
@@ -113,6 +113,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
+            archiveArtifacts artifacts: 'artemis/.benchmarks/**/*', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
             dir("./artemis/") {
                 sh 'make logs TAG=local > logs || exit 0'

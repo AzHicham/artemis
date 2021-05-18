@@ -408,22 +408,12 @@ class ArtemisTestFixture(CommonTestFixture):
         """
         pass
 
-    def request_compare(self, http_query, checker):
-        self.nb_call_to_request_compare += 1
-
-        # Get the json answer of the request (it is just a string here)
-        http_response = requests.get(http_query)
-
-        response_string = http_response.text
-
-        if self.create_ref:
-            # Create the reference file
-            self.create_reference(http_query, response_string, checker)
-        else:
-            # Comparing my response and my reference
-            self.compare_with_ref(http_query, response_string, checker)
-
-    def api(self, url, response_checker=default_checker.default_checker):
+    def api(
+        self,
+        url,
+        response_checker=default_checker.default_checker,
+        enable_benchmark=False,
+    ):
         """
         Call to an endpoint using a coverage
         NOTE: works only when one region is loaded for the moment (when needed change this)
@@ -431,9 +421,9 @@ class ArtemisTestFixture(CommonTestFixture):
         coverage_query = "/coverage/{coverage_name}/{query}".format(
             coverage_name=str(self.data_sets[0]), query=url
         )
-        return self._api_call(coverage_query, response_checker)
+        return self._api_call(coverage_query, response_checker, enable_benchmark)
 
-    def _api_call(self, url, response_checker):
+    def _api_call(self, url, response_checker, enable_benchmark=False):
         """
         call the api and check against previous results
 
@@ -442,7 +432,12 @@ class ArtemisTestFixture(CommonTestFixture):
         http_query = "{base_query}/v1{url}".format(
             base_query=config["URL_JORMUN"], url=url
         )
-        self.request_compare(http_query, response_checker)
+        http_response = (
+            self.benchmark(requests.get, http_query)
+            if enable_benchmark
+            else requests.get(http_query)
+        )
+        self.compare(http_query, http_response, response_checker)
 
     def journey(
         self,
@@ -454,6 +449,7 @@ class ArtemisTestFixture(CommonTestFixture):
         last_section_mode=[],
         forbidden_uris=[],
         direct_path_mode=[],
+        enable_benchmark=False,
         **kwargs
     ):
         """
@@ -494,8 +490,12 @@ class ArtemisTestFixture(CommonTestFixture):
             coverage=str(self.data_sets[0]),
             query_parameters=query,
         )
-        # launching request dans comparing
-        self.request_compare(http_query, default_checker.default_journey_checker)
+        http_response = (
+            self.benchmark(requests.get, http_query)
+            if enable_benchmark
+            else requests.get(http_query)
+        )
+        self.compare(http_query, http_response, default_checker.default_journey_checker)
 
     def write_full_response_to_file(
         self,
@@ -651,3 +651,18 @@ class ArtemisTestFixture(CommonTestFixture):
             # print_diff(response_filepath, output_reference_filepath, self.get_test_name())
 
             raise
+
+    def compare(self, http_query, http_response, checker):
+        self.nb_call_to_request_compare += 1
+        response_string = http_response.text
+
+        if self.create_ref:
+            # Create the reference file
+            self.create_reference(http_query, response_string, checker)
+        else:
+            # Comparing my response and my reference
+            self.compare_with_ref(http_query, response_string, checker)
+
+    @pytest.fixture(scope="function", autouse=True)
+    def setup_benchmark(self, benchmark):
+        self.benchmark = benchmark

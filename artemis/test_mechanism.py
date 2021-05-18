@@ -322,7 +322,12 @@ class ArtemisTestFixture(CommonTestFixture):
     # wrappers around utils functions #
     ###################################
 
-    def api(self, url, response_checker=default_checker.default_checker):
+    def api(
+        self,
+        url,
+        response_checker=default_checker.default_checker,
+        enable_benchmark=False,
+    ):
         """
         used to check misc API
 
@@ -333,9 +338,9 @@ class ArtemisTestFixture(CommonTestFixture):
                 region=self.__class__.data_sets[0].name, url=url
             )
 
-        return self._api_call(full_url, response_checker)
+        return self._api_call(full_url, response_checker, enable_benchmark)
 
-    def _api_call(self, url, response_checker):
+    def _api_call(self, url, response_checker, enable_benchmark=False):
         """
         call the api and check against previous results
 
@@ -365,6 +370,7 @@ class ArtemisTestFixture(CommonTestFixture):
         first_section_mode=[],
         last_section_mode=[],
         direct_path_mode=[],
+        enable_benchmark=False,
         **kwargs
     ):
         """
