@@ -1,8 +1,5 @@
 name: Artemis
 
-on:
-  repository_dispatch:
-    types: [run_artemis_ng]
 
 jobs:
   tests:
@@ -39,6 +36,18 @@ jobs:
         PYTEST: ''
         PYTEST_ARGS: "--benchmark-json output.json"
       run: make test
+    - name: Aggregate logs
+      if: ${{ always() }}
+      run: make logs TAG=local > logs || exit 0
+    - name: Archive Artemis artifacts (logs + ref)
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs-and-ref
+        path: |
+            output/**/*
+            junit/*.xml
+            logs
     - name: Download previous benchmark data
       uses: actions/cache@v2
       with:
