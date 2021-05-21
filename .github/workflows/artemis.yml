@@ -1,8 +1,8 @@
 name: Artemis
 
 on:
-    repository_dispatch:
-        types: [build-chart-benchmark]
+ repository_dispatch:
+    types: [benchmark]
 
 jobs:
   tests:
@@ -15,7 +15,9 @@ jobs:
     - name: Payload to Json file
       env: 
         JSON: ${{ github.event.client_payload}}
-      run: echo "{ JSON }" | jq . > output.json
+      run: |
+        echo "{ JSON }" | jq . 
+        echo "{ JSON }" | jq . > output.json
     - name: Download previous benchmark data
       uses: actions/cache@v2
       with:
