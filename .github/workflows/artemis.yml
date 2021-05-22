@@ -13,10 +13,10 @@ jobs:
         apt install curl
         apt install jq
     - name: Payload to Json file
-      env: 
+      env:
         JSON: ${{ github.event.client_payload}}
       run: |
-        echo "{ JSON }" | jq . 
+        echo "{ JSON }" | jq .
         echo "{ JSON }" | jq . > output.json
     - name: Download previous benchmark data
       uses: actions/cache@v2
