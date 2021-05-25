@@ -144,7 +144,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'artemis/**/*', allowEmptyArchive :true, fingerprint: true
+            archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
             archiveArtifacts artifacts: 'artemis/benchmark.json', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
             dir("./artemis/") {
