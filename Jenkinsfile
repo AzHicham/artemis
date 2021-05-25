@@ -129,12 +129,12 @@ pipeline {
                 string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')])
               {
                   sh """
-                    cp -f benchmark.json ./artemis_benchmark/benchmark.json
+                    cp -f ./artemis/benchmark.json ./artemis_benchmark/benchmark.json
                     cd ./artemis_benchmark
                     git add benchmark.json
                     git commit -m "Update benchmarks"
                     git push
-                    curl -X POST --url https://api.github.com/repos/AzHicham/benchmark/dispatches -H 'Content-type: application/json' \
+                    curl -X POST --url https://api.github.com/repos/CanalTP/artemis_benchmark/dispatches -H 'Content-type: application/json' \
                     -H "authorization: token $GITHUB_TOKEN" \
                     --data '{ "event_type": "bench-report", "client_payload": { "commit_id": "${COMMIT_ID}", "commit_message": "${COMMIT_MESSAGE}", "commit_timestamp": "${COMMIT_TIMESTAMP}", "commit_url": "${COMMIT_URL}", "commit_username": "${COMMIT_USERNAME}" }  }'
                   """
@@ -144,8 +144,8 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'artemis/output/**/*', allowEmptyArchive :true, fingerprint: true
-            archiveArtifacts artifacts: 'artemis/.benchmarks/**/*', allowEmptyArchive :true, fingerprint: true
+            archiveArtifacts artifacts: 'artemis/**/*', allowEmptyArchive :true, fingerprint: true
+            archiveArtifacts artifacts: 'artemis/benchmark.json', allowEmptyArchive :true, fingerprint: true
             junit testResults: 'artemis/junit/*.xml', allowEmptyResults: true
             dir("./artemis/") {
                 sh 'make logs TAG=local > logs || exit 0'
