@@ -9,7 +9,7 @@ pipeline {
         string(name: 'artemis_ref_branch', defaultValue: 'artemis_ng', description: 'Artemis_references branch to checkout')
         string(name: 'navitia_docker_compose_repo', defaultValue: 'CanalTP/navitia-docker-compose', description: 'Navitia_docker_compose github repository')
         string(name: 'navitia_docker_compose_branch', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
-        string(name: 'commit_id', defaultValue: 'id', description: 'Commit sha')
+        string(name: 'commit_id', defaultValue: 'undefined', description: 'Commit sha')
         string(name: 'commit_message', defaultValue: 'title', description: 'Commit title')
         string(name: 'commit_timestamp', defaultValue: 'date', description: 'Commit timestamp')
         string(name: 'commit_url', defaultValue: 'https://github.com/CanalTP/navitia', description: 'Repo URL')
@@ -123,6 +123,7 @@ pipeline {
                 COMMIT_URL       = "${params.commit_url}"
                 COMMIT_USERNAME  = "${params.commit_username}"
             }
+            when { expression { return "${params.navitia_branch}" == 'dev' && "${params.commit_id}" != 'undefined'} }
             steps {
               withCredentials(
               [sshUserPrivateKey(credentialsId: 'jenkins-core-ssh',keyFileVariable: 'SSH_KEY_FILE',passphraseVariable: '',usernameVariable: 'jenkins-kisio-core'),
