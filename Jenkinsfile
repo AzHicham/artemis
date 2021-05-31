@@ -118,7 +118,7 @@ pipeline {
         stage('Push benchmarks') {
             environment {
                 COMMIT_ID        = "${params.commit_id}"
-                COMMIT_MESSAGE   = "${params.commit_message}"
+                COMMIT_MESSAGE   = sh(returnStdout: true, script: "echo '${params.commit_message}' | tr '\n' ' ' ").trim()
                 COMMIT_TIMESTAMP = "${params.commit_timestamp}"
                 COMMIT_URL       = "${params.commit_url}"
                 COMMIT_USERNAME  = "${params.commit_username}"
@@ -130,8 +130,11 @@ pipeline {
                 string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')])
               {
                   sh """
+                    eval `ssh-agent`
+                    ssh-add $SSH_KEY_FILE
                     cp -f ./artemis/benchmark.json ./artemis_benchmark/benchmark.json
                     cd ./artemis_benchmark
+                    git config user.name "Jenkins"
                     git add benchmark.json
                     git commit -m "Update benchmarks"
                     git push
