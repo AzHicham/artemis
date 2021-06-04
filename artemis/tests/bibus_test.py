@@ -407,6 +407,7 @@ class Bibus(object):
         self.api(
             "stop_areas/stop_area:BIB:SA:212/arrivals?from_datetime=20041106T100000"
         )
+
     @xfail(
         reason="there is some instability on the number of nb_admins_from_cities",
         raises=AssertionError,

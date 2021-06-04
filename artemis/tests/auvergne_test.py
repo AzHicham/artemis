@@ -102,6 +102,7 @@ class Auvergne(object):
             datetime="20160120T100000",
             free_radius_from=400,
         )
+
     @xfail(
         reason="there is some instability on the number of nb_admins_from_cities",
         raises=AssertionError,
