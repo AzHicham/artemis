@@ -50,8 +50,8 @@ def load_cities(request):
         return json.loads(r_cities.text)["latest_job"]
 
     @retry(
-        stop_max_delay=300000,
-        wait_fixed=1000,
+        stop_max_delay=900000,
+        wait_fixed=2000,
         retry_on_exception=utils.is_retry_exception,
     )
     def wait_for_cities_db():
@@ -69,8 +69,8 @@ def load_cities(request):
                 raise Exception("Couldn't get 'cities' job status")
 
     @retry(
-        stop_max_delay=300000,
-        wait_fixed=1000,
+        stop_max_delay=900000,
+        wait_fixed=2000,
         retry_on_exception=utils.is_retry_exception,
     )
     def wait_for_cities_completion():
