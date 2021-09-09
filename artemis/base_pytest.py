@@ -484,11 +484,18 @@ class ArtemisTestFixture(CommonTestFixture):
         # Add current_datetime for disruptions
         query = "{query}&_current_datetime={d}".format(query=query, d=datetime)
 
+        # Always use distributed scenario
+        query = "{query}&_override_scenario=distributed".format(query=query)
+
         # creating the full URL
+        coverage_ = (
+            "{cov}-loki".format(cov=str(self.data_sets[0]))
+            if bool(config["USE_LOKI"]) is True
+            else str(self.data_sets[0])
+        )
+
         http_query = "{base_url}/v1/coverage/{coverage}/journeys?{query_parameters}".format(
-            base_url=config["URL_JORMUN"],
-            coverage=str(self.data_sets[0]),
-            query_parameters=query,
+            base_url=config["URL_JORMUN"], coverage=coverage_, query_parameters=query
         )
         http_response = (
             self.benchmark(requests.get, http_query)
