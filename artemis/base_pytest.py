@@ -640,7 +640,8 @@ class ArtemisTestFixture(CommonTestFixture):
             with open(output_reference_filepath, "w") as reference_text:
                 reference_text.write(raw_reference)
 
-            if six.PY3:
+            # This is a temp bug fix for Artemis-Loki (segfault in Deepdiff with test idfm_11)
+            if six.PY3 and bool(config["USE_LOKI"]) is False:
                 from artemis import pytest_report_makers
 
                 report_message = pytest_report_makers.response_diff(
