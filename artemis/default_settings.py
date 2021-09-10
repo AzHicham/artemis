@@ -3,7 +3,10 @@
 import os
 
 # Active Artemis NG
-USE_ARTEMIS_NG = os.getenv("ARTEMIS_USE_ARTEMIS_NG", False)
+USE_ARTEMIS_NG = os.getenv("ARTEMIS_USE_ARTEMIS_NG", "False") == "True"
+
+# Use Artemis with loki for pt
+USE_LOKI = os.getenv("ARTEMIS_USE_LOKI", "False") == "True"
 
 # Path to artemis_data folder
 DATA_DIR = os.getenv("ARTEMIS_DATA_DIR", "/srv/artemis_data")
