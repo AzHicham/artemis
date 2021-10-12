@@ -5,7 +5,7 @@ pipeline {
         string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
         string(name: 'artemis_data_repo', defaultValue: 'CanalTP/artemis_data', description: 'Artemis_data github repository ')
         string(name: 'artemis_data_branch', defaultValue: 'master', description: 'Artemis_data branch to checkout')
-        string(name: 'artemis_ref_repo', defaultValue: 'AzHicham/artemis_references', description: 'Artemis_references github repository ')
+        string(name: 'artemis_ref_repo', defaultValue: 'CanalTP/artemis_references', description: 'Artemis_references github repository ')
         string(name: 'artemis_ref_branch', defaultValue: 'artemis_ng', description: 'Artemis_references branch to checkout')
         string(name: 'navitia_docker_compose_repo', defaultValue: 'CanalTP/navitia-docker-compose', description: 'Navitia_docker_compose github repository')
         string(name: 'navitia_docker_compose_branch', defaultValue: 'master', description: 'Navitia_docker_compose branch to checkout')
@@ -38,27 +38,19 @@ pipeline {
     }
     stages {
         stage('Pull data') {
-            steps {
-                withCredentials(
-                [sshUserPrivateKey(
-                    credentialsId: 'jenkins-core-ssh',
-                    keyFileVariable: 'SSH_KEY_FILE',
-                    passphraseVariable: '',
-                    usernameVariable: 'jenkins-kisio-core')])
-                {
-                    sh """
-                    eval `ssh-agent`
-                    ssh-add $SSH_KEY_FILE
-                    rm -rf ./artemis
-                    git clone git@github.com:${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
-                    git clone git@github.com:${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
-                    git clone git@github.com:${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
-                    git clone git@github.com:${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./artemis/navitia-docker-compose
-                    git clone git@github.com:CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
-                    """
-                }
-            }
-        }
+          steps {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
+                  sh """
+                  rm -rf ./artemis
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_repo}.git --branch ${params.artemis_branch} ./artemis
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./artemis/navitia-docker-compose
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}github.com/CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
+                  """
+              }
+          }
+      }
 		stage('Clean Docker containers and images') {
 			steps {
 				dir("./artemis/") {
@@ -78,7 +70,7 @@ pipeline {
                 FORK    = "${params.navitia_fork}"
             }
             steps {
-                withCredentials([string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                     dir("./artemis/navitia-docker-compose/builder_from_package/") {
                         sh "./build.sh -o ${GITHUB_TOKEN} -t local -e ${EVENT} -f ${FORK} -b ${BRANCH}"
                     }
@@ -125,13 +117,8 @@ pipeline {
             }
             when { expression { return "${params.navitia_branch}" == 'dev' && "${params.commit_id}" != 'undefined'} }
             steps {
-              withCredentials(
-              [sshUserPrivateKey(credentialsId: 'jenkins-core-ssh',keyFileVariable: 'SSH_KEY_FILE',passphraseVariable: '',usernameVariable: 'jenkins-kisio-core'),
-                string(credentialsId: 'jenkins-core-github-access-token', variable: 'GITHUB_TOKEN')])
-              {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                   sh """
-                    eval `ssh-agent`
-                    ssh-add $SSH_KEY_FILE
                     cp -f ./artemis/benchmark.json ./artemis_benchmark/benchmark.json
                     cd ./artemis_benchmark
                     git config user.name "Jenkins"
