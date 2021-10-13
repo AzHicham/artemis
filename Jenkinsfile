@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'agent06' }
     parameters {
         string(name: 'artemis_repo', defaultValue: 'CanalTP/artemis', description: 'Artemis gihub repository')
         string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
@@ -46,7 +46,7 @@ pipeline {
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./artemis/navitia-docker-compose
-                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}github.com/CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
+                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
                   """
               }
           }
