@@ -46,7 +46,6 @@ pipeline {
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_data_repo}.git --branch ${params.artemis_data_branch} ./artemis/artemis_data
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.artemis_ref_repo}.git --branch ${params.artemis_ref_branch} ./artemis/artemis_references
                   git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/${params.navitia_docker_compose_repo}.git --branch ${params.navitia_docker_compose_branch} ./artemis/navitia-docker-compose
-                  git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
                   """
               }
           }
@@ -119,6 +118,7 @@ pipeline {
             steps {
               withCredentials([usernamePassword(credentialsId: 'jenkins-app-core', usernameVariable: 'GITHUB_APP', passwordVariable: 'GITHUB_TOKEN')]) {
                   sh """
+                    git clone https://${GITHUB_APP}:${GITHUB_TOKEN}@github.com/CanalTP/artemis_benchmark.git --branch main ./artemis_benchmark
                     cp -f ./artemis/benchmark.json ./artemis_benchmark/benchmark.json
                     cd ./artemis_benchmark
                     git config user.name "Jenkins"
