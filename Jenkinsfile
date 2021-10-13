@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'agent06' }
     parameters {
         string(name: 'artemis_repo', defaultValue: 'CanalTP/artemis', description: 'Artemis gihub repository')
         string(name: 'artemis_branch', defaultValue: 'master', description: 'Artemis branch to checkout')
